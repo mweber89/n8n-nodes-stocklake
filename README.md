@@ -14,9 +14,11 @@ n8n-nodes-stocklake
 
 ## Credentials
 
-An API key is **optional**. Without one, the node calls Stocklake as an unauthenticated guest (25 calls/day, the 8 market-data operations only). With a free key it's 200 calls/day; a Pro key unlocks 5000 calls/day plus 9 additional AI-research operations.
+Credentials are **optional**. Without one, the node calls Stocklake as an unauthenticated guest (25 calls/day, the 8 market-data operations only). Once connected — either way below — it's 200 calls/day; a Pro account unlocks 5000 calls/day plus 9 additional AI-research operations. The node's **Authentication** dropdown picks between the two:
 
-To get a key: go to [stocklake.dev/login](https://stocklake.dev/login), enter your email, and click the magic link — no password, no credit card. Your key is on the account page. Then add a **Stocklake API** credential in n8n and paste it in.
+**OAuth2 (recommended)** — add a **Stocklake OAuth2 API** credential and click Connect. No key to copy or paste: your browser opens, you sign in with a magic link (or you're already signed in), and n8n handles the rest — including token refresh. Under the hood this uses n8n's Dynamic Client Registration support against Stocklake's own OAuth server, the same mechanism Claude and ChatGPT connectors use.
+
+**API key** — go to [stocklake.dev/login](https://stocklake.dev/login), enter your email, click the magic link, and your key is on the account page. Add a **Stocklake API** credential in n8n and paste it in. Useful if your n8n instance can't complete a browser-based OAuth flow (e.g. some headless/CI setups).
 
 | Tier  | Calls/day | Operations |
 |-------|-----------|------------|

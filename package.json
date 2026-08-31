@@ -33,7 +33,8 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/StocklakeApi.credentials.js"
+      "dist/credentials/StocklakeApi.credentials.js",
+      "dist/credentials/StocklakeOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Stocklake/Stocklake.node.js"
