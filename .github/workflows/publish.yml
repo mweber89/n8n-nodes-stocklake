@@ -26,6 +26,22 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run lint
+      - run: npm test
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Verify with n8n's own community-package scanner
+        # @n8n/scan-community-package fetches the package BY NAME from the
+        # npm registry — it has no local-directory mode, so this can only
+        # meaningfully run post-publish, not as a pre-publish gate. This is
+        # the real, official pre-Creator-Portal-submission check (provenance
+        # + the same static analysis rules `npm run lint` already runs
+        # locally, but against what's actually live on npm, not the working
+        # tree). A short sleep first: registry propagation for a fresh,
+        # provenance-attested publish isn't always instant. The tool prints
+        # a pass/fail report but always exits 0 (confirmed empirically —
+        # don't rely on its exit code), so this step is deliberately
+        # informational, not a workflow-failing gate; read the log.
+        run: |
+          sleep 20
+          npx --yes @n8n/scan-community-package n8n-nodes-stocklake

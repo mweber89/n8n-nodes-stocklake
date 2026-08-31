@@ -7,14 +7,26 @@ on:
     branches: [main]
 
 jobs:
-  build-and-lint:
+  build-lint-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
+          # A real n8n instance installs only this package's dependencies/
+          # peerDependencies (n8n-workflow — none of it), never devDependencies,
+          # so the published dist/ output's actual runtime floor is whatever
+          # `engines.node` in package.json declares (20.15+), unrelated to
+          # what Node version this CI job itself uses. Pinned at 22 here
+          # specifically because n8n-workflow's own current devDependency
+          # tree (via @n8n/expression-runtime -> isolated-vm) requires
+          # Node >=22 just to install — a dev-tooling constraint, not a
+          # runtime one. Don't add an older-Node matrix leg on the assumption
+          # it validates runtime compatibility; it doesn't, and it would just
+          # break npm ci on this specific transitive dependency instead.
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm run lint
+      - run: npm test
