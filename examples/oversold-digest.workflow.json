@@ -1,0 +1,81 @@
+{
+  "name": "Stocklake — Daily Oversold Digest",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Every Morning 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * 1-5" }]
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Market Pulse",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [220, -80],
+      "parameters": {
+        "resource": "market",
+        "operation": "getPulse"
+      }
+    },
+    {
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Oversold Screen",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [220, 80],
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "oversold",
+        "limit": 10
+      }
+    },
+    {
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Format Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 0],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const pulse = $('Market Pulse').first().json;\nconst screen = $('Oversold Screen').all().map(i => i.json);\n\nconst fg = pulse.fear_greed || {};\nconst br = pulse.breadth || {};\n\nconst lines = [\n  `Stocklake Oversold Digest — ${new Date().toDateString()}`,\n  '',\n  `VIX ${pulse.vix ?? '—'} | Fear & Greed ${fg.value ?? '—'} (${fg.description ?? 'n/a'})`,\n  `Breadth: ${br.oversold_pct ?? '—'}% oversold of ${br.universe_size ?? '—'} stocks`,\n  '',\n  `Oversold candidates (${screen.length}):`,\n  ...screen.map(s => `  ${(s.symbol ?? '?').padEnd(6)} RSI ${s.rsi ?? '—'}  $${s.price ?? '—'}  ${s.name ?? ''}`),\n];\n\nreturn [{ json: { digest: lines.join('\\n') } }];"
+      }
+    },
+    {
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Digest Ready",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 0],
+      "notes": "Wire this to Slack, Send Email, Google Sheets, etc. — whatever notification node you already have credentials for."
+    }
+  ],
+  "connections": {
+    "Every Morning 8am": {
+      "main": [
+        [
+          { "node": "Market Pulse", "type": "main", "index": 0 },
+          { "node": "Oversold Screen", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Market Pulse": {
+      "main": [[{ "node": "Format Digest", "type": "main", "index": 0 }]]
+    },
+    "Oversold Screen": {
+      "main": [[{ "node": "Format Digest", "type": "main", "index": 0 }]]
+    },
+    "Format Digest": {
+      "main": [[{ "node": "Digest Ready", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {}
+}

@@ -1,0 +1,31 @@
+name: Publish to npm
+
+# Manual trigger only — a verified n8n community node is expected to be
+# published deliberately, per a version bump, not on every push to main.
+# Requires npm provenance (mandatory for n8n-verified nodes since 2026-05-01),
+# which needs this workflow to run with `id-token: write` and the repo's npm
+# publishing configured for GitHub Actions as a trusted publisher (or a
+# short-lived Granular Access Token stored as the NPM_TOKEN secret).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

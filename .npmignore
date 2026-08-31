@@ -1,0 +1,11 @@
+node_modules/
+*.ts
+!*.d.ts
+tsconfig.json
+gulpfile.js
+.eslintrc*
+eslint.config.mjs
+.prettierrc
+examples/
+.github/
+*.log
