@@ -25,7 +25,86 @@ interface McpJsonRpcResponse {
 	jsonrpc: '2.0';
 	id: string | number;
 	result?: McpToolResult;
-	error?: { code: number; message: string; data?: IDataObject };
+	// `data` is not always an object — a protocol-level rejection sends an empty
+	// string for it — so this stays deliberately loose rather than IDataObject.
+	error?: { code: number; message: string; data?: unknown };
+}
+
+/** What the node shows in the n8n UI for a failed call: a short, actionable
+ * headline plus optional secondary detail. */
+interface ApiErrorText {
+	message: string;
+	description?: string;
+}
+
+/**
+ * The API signals failure in three different shapes depending on which layer
+ * rejected the call, and only one of them is a JSON-RPC `error` (all three
+ * confirmed live against api.stocklake.dev):
+ *
+ *   1. HTTP non-2xx        — bad/inactive key (401), rate limit (429). Thrown by
+ *                            the HTTP helper before we ever see a body.
+ *   2. result.isError      — tier rejection (`pro_required`) and unknown-tool or
+ *                            bad-argument errors. HTTP is 200 and there is NO
+ *                            structuredContent; the payload is a JSON string
+ *                            (or, for unknown-tool, plain text) in content[0].text.
+ *   3. structuredContent.error — a per-tool application error inside an otherwise
+ *                            successful envelope (isError is false): symbol_not_found,
+ *                            history_not_found, invalid_preset, ...
+ *
+ * Shape 3 is the dangerous one: returned as-is it becomes a *successful* node
+ * item whose json is `{ error: {...} }`, so a typo'd ticker would flow silently
+ * downstream behind a green checkmark. All three are normalised here instead.
+ *
+ * Note this must NOT treat a partial batch miss as a failure — get_stocks reports
+ * unresolved symbols in a `missing` array alongside real results, and an empty
+ * screener result is `count: 0`. Neither sets `error`, so only the explicit
+ * `error` key is treated as a failure.
+ */
+function describeApiError(payload: unknown, fallback: string): ApiErrorText {
+	if (typeof payload !== 'object' || payload === null) {
+		return { message: fallback };
+	}
+
+	const body = payload as IDataObject;
+	const err = body.error;
+
+	// Per-tool application error: { error: { code, message, type } }
+	if (typeof err === 'object' && err !== null) {
+		const inner = err as IDataObject;
+		const message = (inner.message as string) ?? (inner.code as string) ?? fallback;
+		const code = inner.code as string | undefined;
+		return { message, description: code ? `Stocklake error code: ${code}` : undefined };
+	}
+
+	// Tier rejection: { error: "pro_required", message, tell_your_user, preview, ... }.
+	// Both `message` and `tell_your_user` are written for an AI agent deciding
+	// whether to prompt for an upgrade, and run to several hundred characters of
+	// OAuth-connector advice that doesn't apply inside n8n — so this states the
+	// same thing in one line an n8n user can act on, and keeps the API's own
+	// wording as secondary detail rather than discarding it.
+	if (err === 'pro_required') {
+		return {
+			message:
+				'This operation requires a Stocklake Pro account. Upgrade at https://stocklake.dev/account — Pro is enabled on the account, so your existing credential keeps working and needs no reconnect.',
+			description: (body.preview_note as string) ?? (body.tell_your_user as string),
+		};
+	}
+
+	if (typeof err === 'string') {
+		return { message: (body.message as string) ?? err, description: err };
+	}
+
+	return { message: (body.message as string) ?? fallback };
+}
+
+/** Parses a JSON payload, returning undefined rather than throwing on non-JSON. */
+function tryParseJson(text: string): unknown {
+	try {
+		return JSON.parse(text) as unknown;
+	} catch {
+		return undefined;
+	}
 }
 
 let requestCounter = 0;
@@ -95,15 +174,15 @@ export async function stocklakeApiRequest(
 		throw new NodeApiError(this.getNode(), error as JsonObject, { itemIndex });
 	}
 
+	// Shape 1 (see describeApiError): a protocol-level JSON-RPC rejection.
 	if (response.error) {
-		// A JSON-RPC-level error (e.g. code -32001 "requires the Pro tier" on an
-		// unauthenticated/free-tier call to a Pro-only tool). data.tell_your_user
-		// carries a plain-English explanation worth surfacing over the raw message.
-		const data = response.error.data ?? {};
-		const message = (data.tell_your_user as string) ?? response.error.message;
+		const { message, description } = describeApiError(
+			response.error.data,
+			response.error.message,
+		);
 		throw new NodeOperationError(this.getNode(), message, {
 			itemIndex,
-			description: response.error.message,
+			description: description ?? response.error.message,
 		});
 	}
 
@@ -114,24 +193,48 @@ export async function stocklakeApiRequest(
 		});
 	}
 
+	const text = result.content?.[0]?.text ?? '';
+
+	// Shape 2: tier/tool rejection. HTTP 200, no structuredContent, payload is a
+	// JSON string (or plain text for an unknown tool) in content[0].text.
+	if (result.isError) {
+		const { message, description } = describeApiError(
+			tryParseJson(text),
+			text || 'Stocklake API returned an error',
+		);
+		throw new NodeOperationError(this.getNode(), message, { itemIndex, description });
+	}
+
 	if (result.structuredContent) {
+		// Shape 3: an application error carried inside an otherwise-successful
+		// envelope. Returning this as a normal item would report success for a
+		// call that produced no data, so surface it as a real node error instead.
+		if (result.structuredContent.error !== undefined) {
+			const { message, description } = describeApiError(
+				result.structuredContent,
+				'Stocklake API returned an error',
+			);
+			throw new NodeOperationError(this.getNode(), message, { itemIndex, description });
+		}
 		return result.structuredContent;
 	}
 
-	const text = result.content?.[0]?.text ?? '';
-	if (result.isError) {
-		throw new NodeOperationError(this.getNode(), text || 'Stocklake API returned an error', {
-			itemIndex,
-		});
+	const parsed = tryParseJson(text);
+	if (parsed !== undefined && typeof parsed === 'object' && parsed !== null) {
+		const body = parsed as IDataObject;
+		if (body.error !== undefined) {
+			const { message, description } = describeApiError(
+				body,
+				'Stocklake API returned an error',
+			);
+			throw new NodeOperationError(this.getNode(), message, { itemIndex, description });
+		}
+		return body;
 	}
 
-	try {
-		return JSON.parse(text) as IDataObject;
-	} catch {
-		// A handful of tool errors (e.g. an unknown tool name) come back as
-		// plain, non-JSON text rather than a structured error object.
-		return { result: text };
-	}
+	// A tool response that is neither structured nor JSON (rare) is still worth
+	// returning verbatim rather than failing the item.
+	return { result: text };
 }
 
 /** Splits a "AAPL, MSFT , nvda" field into a clean, de-duplicated symbol array. */
