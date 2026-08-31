@@ -41,13 +41,12 @@
   },
   "devDependencies": {
     "@n8n/eslint-plugin-community-nodes": "^0.30.0",
-    "@typescript-eslint/parser": "^8.35.0",
-    "eslint": "^9.39.5",
+    "eslint": "9.29.0",
     "gulp": "^4.0.2",
     "n8n-workflow": "*",
     "prettier": "^3.3.3",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.69.0"
+    "typescript-eslint": "^8.35.0"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
