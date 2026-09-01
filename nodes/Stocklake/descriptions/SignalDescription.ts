@@ -60,8 +60,9 @@ export const signalFields: INodeProperties[] = [
 		name: 'limit',
 		type: 'number',
 		default: 50,
-		typeOptions: { minValue: 1, maxValue: 50 },
-		description: 'Each returned signal counts as one call toward the daily limit',
+		typeOptions: { minValue: 1 },
+		description: 'Max number of results to return',
+		hint: 'Each returned signal counts as one call toward your daily limit.',
 		displayOptions: { show: { resource: ['signal'], operation: ['getMany'] } },
 	},
 ];

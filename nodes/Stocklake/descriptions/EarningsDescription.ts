@@ -72,9 +72,10 @@ export const earningsFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 25,
-		typeOptions: { minValue: 1, maxValue: 25 },
-		description: 'Max results. Each returned stock counts as one call toward the daily limit.',
+		default: 50,
+		typeOptions: { minValue: 1 },
+		description: 'Max number of results to return',
+		hint: 'The API returns at most 25. Each returned stock counts as one call toward your daily limit.',
 		displayOptions: {
 			show: { resource: ['earnings'], operation: ['getIntelligence'] },
 		},

@@ -41,8 +41,10 @@ export const newsFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 10,
-		typeOptions: { minValue: 1, maxValue: 25 },
+		description: 'Max number of results to return',
+		hint: 'The API returns at most 25. Each returned article counts as one call toward your daily limit.',
+		default: 50,
+		typeOptions: { minValue: 1 },
 		displayOptions: { show: { resource: ['news'], operation: ['getFeed'] } },
 	},
 ];

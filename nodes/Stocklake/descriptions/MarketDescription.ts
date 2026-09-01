@@ -50,10 +50,10 @@ export const marketFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 10,
-		typeOptions: { minValue: 1, maxValue: 20 },
-		description:
-			'Results per category (max 20). A symbol appearing in more than one category counts once per category toward the daily limit.',
+		default: 50,
+		typeOptions: { minValue: 1 },
+		description: 'Max number of results to return',
+		hint: 'The API returns at most 20 per category. A symbol in more than one category counts once per category.',
 		displayOptions: {
 			show: { resource: ['market'], operation: ['getMovers'] },
 		},

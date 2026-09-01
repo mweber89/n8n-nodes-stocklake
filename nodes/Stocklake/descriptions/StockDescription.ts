@@ -17,16 +17,28 @@ export const stockOperations: INodeProperties = {
 			action: 'Get a stock',
 		},
 		{
-			name: 'Get Many',
-			value: 'getMany',
-			description: 'Batch stock data for up to 25 symbols in one call (free)',
-			action: 'Get many stocks',
-		},
-		{
 			name: 'Get History',
 			value: 'getHistory',
 			description: 'Daily OHLCV price history, up to 365 days (free)',
 			action: 'Get stock history',
+		},
+		{
+			name: 'Get Indicator History',
+			value: 'getIndicatorHistory',
+			description: 'Historical daily snapshot of every technical indicator together (requires Pro)',
+			action: 'Get stock indicator history',
+		},
+		{
+			name: 'Get Insider Activity',
+			value: 'getInsiderActivity',
+			description: 'AI-synthesized insider and institutional sentiment (requires Pro)',
+			action: 'Get stock insider activity',
+		},
+		{
+			name: 'Get Many',
+			value: 'getMany',
+			description: 'Batch stock data for up to 25 symbols in one call (free)',
+			action: 'Get many stocks',
 		},
 		{
 			name: 'Get News',
@@ -41,18 +53,6 @@ export const stockOperations: INodeProperties = {
 			description:
 				'Full AI research bundle for one stock — summary, key points, risks, news, insider and signal context in a single call (requires Pro)',
 			action: 'Get stock research',
-		},
-		{
-			name: 'Get Indicator History',
-			value: 'getIndicatorHistory',
-			description: 'Historical daily snapshot of every technical indicator together (requires Pro)',
-			action: 'Get stock indicator history',
-		},
-		{
-			name: 'Get Insider Activity',
-			value: 'getInsiderActivity',
-			description: 'AI-synthesized insider and institutional sentiment (requires Pro)',
-			action: 'Get stock insider activity',
 		},
 	],
 };
@@ -90,9 +90,10 @@ export const stockFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 10,
-		typeOptions: { minValue: 1, maxValue: 50 },
-		description: 'Max articles to return (free tier is capped at 5 regardless of this value)',
+		default: 50,
+		typeOptions: { minValue: 1 },
+		description: 'Max number of results to return',
+		hint: 'Free tier returns at most 5 articles regardless of this value. Pro returns up to 50.',
 		displayOptions: { show: { resource: ['stock'], operation: ['getNews'] } },
 	},
 	{

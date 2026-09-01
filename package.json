@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-stocklake",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n community node for the Stocklake API — real-time and historical US/international stock market data, technical indicators, AI-synthesized research, insider/institutional activity, earnings intelligence, and macro/sector outlook.",
   "keywords": [
     "n8n-community-node-package",
@@ -51,6 +51,7 @@
   "devDependencies": {
     "@n8n/eslint-plugin-community-nodes": "^0.30.0",
     "eslint": "9.29.0",
+    "eslint-plugin-n8n-nodes-base": "^2.0.0",
     "gulp": "^4.0.2",
     "n8n-workflow": "*",
     "prettier": "^3.3.3",
