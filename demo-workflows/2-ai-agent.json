@@ -1,0 +1,62 @@
+{
+  "name": "Stocklake — AI Agent",
+  "nodes": [
+    {
+      "parameters": { "options": {} },
+      "id": "b2000000-0000-4000-8000-000000000001",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-40, 300],
+      "webhookId": "b2000000-0000-4000-8000-0000000000ff"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a market research assistant with live access to Stocklake.\n\nAlways call the Stocklake tool to get real numbers before answering — never answer a price, RSI or indicator question from memory. Quote the figures you get back and say what they imply. Keep answers to a few sentences."
+        }
+      },
+      "id": "b2000000-0000-4000-8000-000000000002",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-4-openrouter-1",
+        "options": { "temperature": 0.2 }
+      },
+      "id": "b2000000-0000-4000-8000-000000000003",
+      "name": "Chat Model (LiteLLM)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.1,
+      "position": [140, 520]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Live stock market data from Stocklake. Use for a single stock's price, fundamentals and technical indicators (RSI, MACD, Bollinger, moving averages). Pass the ticker symbol, e.g. NVDA or AAPL.",
+        "resource": "stock",
+        "operation": "get",
+        "symbol": {
+          "__rl": true,
+          "value": "={{ $fromAI('symbol', 'The stock ticker symbol, e.g. NVDA', 'string') }}",
+          "mode": "id"
+        }
+      },
+      "id": "b2000000-0000-4000-8000-000000000004",
+      "name": "Stocklake",
+      "type": "n8n-nodes-stocklake.stocklakeTool",
+      "typeVersion": 1,
+      "position": [360, 520]
+    }
+  ],
+  "connections": {
+    "When chat message received": { "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]] },
+    "Chat Model (LiteLLM)": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Stocklake": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

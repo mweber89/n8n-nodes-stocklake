@@ -1,0 +1,58 @@
+{
+  "name": "Stocklake — Common Actions",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-40, 300]
+    },
+    {
+      "parameters": {
+        "resource": "stock",
+        "operation": "get",
+        "symbol": { "__rl": true, "value": "AAPL", "mode": "id" }
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Get Stock — AAPL",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "oversold",
+        "limit": 10,
+        "additionalFields": { "sortBy": "rsi", "sortDir": "asc" }
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Screener — Oversold",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [220, 300]
+    },
+    {
+      "parameters": { "resource": "market", "operation": "getPulse" },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Market Pulse",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [220, 500]
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[
+        { "node": "Get Stock — AAPL", "type": "main", "index": 0 },
+        { "node": "Screener — Oversold", "type": "main", "index": 0 },
+        { "node": "Market Pulse", "type": "main", "index": 0 }
+      ]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

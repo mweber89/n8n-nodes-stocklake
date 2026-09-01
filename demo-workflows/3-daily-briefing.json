@@ -1,0 +1,70 @@
+{
+  "name": "Stocklake — Daily Oversold Briefing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 15 * * 1-5" }] }
+      },
+      "id": "c3000000-0000-4000-8000-000000000001",
+      "name": "Weekdays 15:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-40, 300]
+    },
+    {
+      "parameters": { "resource": "market", "operation": "getAssessment", "historyCount": 0 },
+      "id": "c3000000-0000-4000-8000-000000000002",
+      "name": "Market Assessment",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "",
+        "limit": 5,
+        "additionalFields": {
+          "maxRsi": 30,
+          "minMarketCapB": 2,
+          "sortBy": "rsi",
+          "sortDir": "asc"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000003",
+      "name": "Oversold, >$2B",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [420, 300]
+    },
+    {
+      "parameters": { "fieldToSplitOut": "results", "options": {} },
+      "id": "c3000000-0000-4000-8000-000000000004",
+      "name": "One Item Per Stock",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "resource": "stock",
+        "operation": "getResearch",
+        "symbol": { "__rl": true, "value": "={{ $json.symbol }}", "mode": "id" }
+      },
+      "id": "c3000000-0000-4000-8000-000000000005",
+      "name": "AI Research (Pro)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [860, 300]
+    }
+  ],
+  "connections": {
+    "Weekdays 15:00": { "main": [[{ "node": "Market Assessment", "type": "main", "index": 0 }]] },
+    "Market Assessment": { "main": [[{ "node": "Oversold, >$2B", "type": "main", "index": 0 }]] },
+    "Oversold, >$2B": { "main": [[{ "node": "One Item Per Stock", "type": "main", "index": 0 }]] },
+    "One Item Per Stock": { "main": [[{ "node": "AI Research (Pro)", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
