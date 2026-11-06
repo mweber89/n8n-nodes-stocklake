@@ -1,6 +1,8 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
+import { csvItem, csvSubject } from './csv';
+import type { CsvOptions } from './csv';
 import { runStopped, stocklakeApiRequest } from './GenericFunctions';
 import {
 	COMPARE_MAX_SYMBOLS,
@@ -214,10 +216,27 @@ async function compareRun(
 		if (rankColumn) rows = rankRows(rows, rankColumn, order);
 	}
 
-	const output: INodeExecutionData[] = rows.map((json) => ({
-		json,
-		pairedItem: paired(String(json.symbol)),
-	}));
+	const options = (this.getNodeParameter('options', i, {}) ?? {}) as IDataObject;
+	let output: INodeExecutionData[];
+	if (options.downloadCsv === true && rows.length > 0) {
+		// Download as CSV: the ranked rows become one file, paired with every input item
+		// that supplied a ticker of it. Failed tickers stay items with their error below.
+		const from = [...new Set(rows.map((row) => paired(String(row.symbol)).item))];
+		output = [
+			await csvItem(
+				this,
+				rows,
+				options as CsvOptions,
+				{ operation: 'compare', subject: csvSubject(rows.map((row) => String(row.symbol))) },
+				from.map((item) => ({ item })),
+			),
+		];
+	} else {
+		output = rows.map((json) => ({
+			json,
+			pairedItem: paired(String(json.symbol)),
+		}));
+	}
 	for (const failure of failures) {
 		output.push({ json: failure.json, pairedItem: paired(failure.symbol) });
 	}

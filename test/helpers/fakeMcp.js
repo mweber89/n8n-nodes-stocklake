@@ -127,19 +127,46 @@ function showMatches(show, values) {
  * default of the property that is visible for the current resource / operation /
  * version. Reproducing it keeps tests honest about the defaults the UI really sends.
  */
-function resolveParameters(description, given, typeVersion) {
-	const values = { ...given, '@version': typeVersion };
+function resolveParameters(description, given, typeVersion, asTool = false) {
+	const values = { ...given, '@version': typeVersion, '@tool': asTool };
 	for (const property of description.properties) {
 		if (property.name in values) continue;
 		const show = property.displayOptions?.show;
 		const hide = property.displayOptions?.hide;
 		if (show && !showMatches(show, values)) continue;
-		if (hide && showMatches(hide, values)) continue;
-		values[property.name] = property.default;
+		// Like n8n: all of `show` must match, any one entry of `hide` hides the property.
+		if (hide && Object.keys(hide).some((key) => showMatches({ [key]: hide[key] }, values))) continue;
+		// n8n marks the default of a resource locator as one (`__rl`).
+		values[property.name] =
+			property.type === 'resourceLocator' && property.default && typeof property.default === 'object'
+				? { __rl: true, ...property.default }
+				: property.default;
 	}
 	delete values['@version'];
+	delete values['@tool'];
 	return values;
 }
+
+/**
+ * What n8n does for a tool: a value that is a `$fromAI()` expression takes what the agent
+ * sent for that key, or the default written in the call; without either the agent's call
+ * is refused (the tool schema requires the argument).
+ */
+function fillFromAI(value, args) {
+	if (typeof value === 'string' && /^=\s*\{\{\s*\$fromAI\(/.test(value)) {
+		const [call] = extractFromAICalls(value);
+		if (args[call.key] !== undefined) return args[call.key];
+		if (call.defaultValue !== undefined) return call.defaultValue;
+		throw new Error(`The agent did not send the required argument "${call.key}"`);
+	}
+	if (Array.isArray(value)) return value.map((v) => fillFromAI(v, args));
+	if (value && typeof value === 'object') {
+		return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, fillFromAI(v, args)]));
+	}
+	return value;
+}
+
+const { extractFromAICalls } = require('n8n-workflow');
 
 /** The node instance for one version, whether the class is versioned or not. */
 function loadNode(NodeClass, version) {
@@ -160,6 +187,8 @@ function loadNode(NodeClass, version) {
  * @param {boolean} [opts.continueOnFail]
  * @param {boolean} [opts.apiKeyCredential]  whether an API-key credential is attached
  * @param {object[]} [opts.hints]  filled with the execution hints the node adds
+ * @param {boolean} [opts.asTool]  run as the Stocklake Tool of an AI agent (`@tool` is true)
+ * @param {object} [opts.toolArguments]  what the agent sent, for the `$fromAI()` values
  */
 async function runNode(node, opts) {
 	const { fake, typeVersion, continueOnFail = false, apiKeyCredential = false } = opts;
@@ -167,7 +196,11 @@ async function runNode(node, opts) {
 	const hints = opts.hints ?? [];
 	// With no input items the parameters of item 0 still exist, as in n8n.
 	const perItem = Array.isArray(opts.params) ? opts.params : items.length > 0 ? items.map(() => opts.params) : [opts.params];
-	const resolved = perItem.map((p) => resolveParameters(node.description, p, typeVersion));
+	const { asTool = false, toolArguments = {} } = opts;
+	const resolved = perItem.map((p) => {
+		const values = resolveParameters(node.description, p, typeVersion, asTool);
+		return asTool ? fillFromAI(values, toolArguments) : values;
+	});
 
 	const context = {
 		getInputData: () => items,
@@ -191,6 +224,13 @@ async function runNode(node, opts) {
 		helpers: {
 			httpRequest: fake.httpRequest,
 			httpRequestWithAuthentication: fake.httpRequestWithAuthentication,
+			prepareBinaryData: async (buffer, fileName, mimeType) => ({
+				data: buffer.toString('base64'),
+				mimeType,
+				fileName,
+				fileExtension: String(fileName).split('.').pop(),
+				fileSize: String(buffer.length),
+			}),
 			returnJsonArray: (data) => (Array.isArray(data) ? data : [data]).map((json) => ({ json })),
 			constructExecutionMetaData: (data, { itemData }) =>
 				data.map((d) => ({ ...d, pairedItem: itemData })),
@@ -230,4 +270,11 @@ async function runLoader(method, { fake, auth = 'apiKey', credentialId = 'cred-1
 	return await method.call(context, filter);
 }
 
-module.exports = { createFakeMcp, loadNode, resolveParameters, runNode, runLoader };
+module.exports = {
+	createFakeMcp,
+	fillFromAI,
+	loadNode,
+	resolveParameters,
+	runNode,
+	runLoader,
+};

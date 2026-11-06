@@ -95,6 +95,12 @@ Stock → Compare, Stock → Snapshot and Portfolio → Check Holdings (version 
 - One bad symbol must not sink the rest. `readBatch` splits a request that fails on its arguments until the symbol stands alone; a failure that every symbol would share (401/403/429, a used-up allowance) ends the run instead. Extra calls (earnings calendar, insider sales, the latest filing) degrade to a note, never to a failure.
 - A new composite goes in `COMPOSITE_OPERATIONS`, in `OPERATION_TOOLS` (the tool its docs link points to), in the free list of `test/copy.test.js`, and gets an example under `examples/` that `test/composites.test.js` runs.
 
+## AI agent tool and CSV export
+
+`toolCatalog.ts` is the one table behind the Stocklake Tool (version 2): per operation a description for a model, a one-line summary, and the arguments the agent fills in (node parameter -> `$fromAI` key, description, default). `descriptions/ToolDescription.ts` turns it into properties shown only for a tool (`displayOptions.show['@tool']`): a Description per operation, `$fromAI()` copies of the matching fields (the originals are hidden for a tool with `hide['@tool']`), and the Toolkit resource with its operation filter. `toolkit.ts` runs a Toolkit call by running the ordinary operation with the agent's arguments in place of the node's own parameters (a Proxy over the execution context), so nothing is implemented twice. Rules: a new operation needs an entry in `TOOL_OPERATIONS` (a test fails otherwise); text inside a `$fromAI()` call must not contain quotes or apostrophes; every argument needs a fallback, or it is required. `csv.ts` holds the file rules (tests in `test/csv.test.js`) and `descriptions/CsvOptions.ts` the options.
+
+To check an agent end to end, run `./scripts/dev-n8n.sh`, build a workflow like `examples/ai-agent-toolkit.workflow.json` with a chat model credential, ask a few questions and look at the tool calls in the agent's execution (Return Intermediate Steps). The unit tests (`test/tools.test.js`) cover the descriptions, the `$fromAI()` schema, the filter and every operation as a tool, but not how a model chooses.
+
 ## Dropdowns loaded from Stocklake
 
 `nodes/Stocklake/loadOptions.ts` holds the `methods.loadOptions` functions and the

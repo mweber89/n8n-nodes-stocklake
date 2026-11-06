@@ -54,8 +54,9 @@ test('no data-provider or internal model names anywhere', () => {
 	}
 });
 
+// The Toolkit (Stocklake Tool only) has no operation of its own: the agent picks one.
 const operationOptions = new Stocklake().nodeVersions[2].description.properties
-	.filter((p) => p.name === 'operation')
+	.filter((p) => p.name === 'operation' && !p.displayOptions.show.resource.includes('toolkit'))
 	.flatMap((p) =>
 		p.displayOptions.show.resource.map((resource) => ({ resource, options: p.options })),
 	);

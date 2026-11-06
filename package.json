@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@n8n/eslint-plugin-community-nodes": "^0.30.0",
+    "@types/node": "^20.19.43",
     "eslint": "9.29.0",
     "eslint-plugin-n8n-nodes-base": "^2.0.0",
     "gulp": "^4.0.2",

@@ -106,6 +106,20 @@ One more item, `kind: "summary"`, follows the holdings: `total_value`, `day_chan
 
 Quotes are read 25 holdings per request, as in Get Many. **One bad symbol does not sink the batch**: in all three operations a ticker Stocklake does not know, a value that cannot be a ticker, a quantity that is not a number, and a request that fails because of one symbol each come back as their own item (`found: false` or `valid: false`, with an `error`), paired with the input item they came from, and everything else is still returned. A failure that would hit every symbol alike (a rejected key, a used-up daily limit) stops the run with the usual error. The summary counts the holdings it could not value in `failed`.
 
+## Using Stocklake with an AI agent (version 2)
+
+The node is usable as a tool: add it to an AI Agent's tool input (it shows up as **Stocklake Tool**). Version 2 tunes it for models:
+
+- **A description written for a model, per operation.** Set Resource and Operation as usual and the tool's **Description** is filled in: what comes back, when to use it, what a free key gets. Edit it if you want to add your own guidance.
+- **`$fromAI()` defaults.** The fields an agent should fill in (ticker, days, limit, and for some operations a preset, sector, category or ranking) default to a `$fromAI()` expression, so nothing has to be wired by hand. Days and limit have a default, so the agent may leave them out; the ticker is required. Return All, Symbol Source and paging are hidden for a tool.
+- **Toolkit: one tool, an operation filter.** Set **Resource** to **Toolkit (Agent Chooses the Operation)** and the agent gets one tool that offers several operations and picks one from the question. **Operations the Agent May Use** is the filter: the agent is told about those operations only (the description follows the filter) and cannot run any other, so a read-only market-data agent never sees the operations you leave out. A new Toolkit starts with the operations that work without Pro; Pro operations can be added and fail for a free key. The call is checked before anything is sent, and an agent that names an unknown or switched-off operation, or leaves out a required argument, gets an error that says what is allowed. Everything else works as in the operation itself (batching, one bad ticker does not stop the rest, the credential and Request Options). Check Holdings is not in the Toolkit.
+
+An example with a filtered Toolkit is in [`examples/ai-agent-toolkit.workflow.json`](./examples/ai-agent-toolkit.workflow.json). The agent needs a chat model that supports tool calling. Toolkit descriptions are n8n expressions, so they need a current n8n.
+
+## CSV export (version 2)
+
+**Options → Download as CSV** on the list operations (Get History, Get Indicator History, Screen Stocks, Compare, and the others that return rows) returns the rows as one binary CSV file (field `data`, change it with **Put CSV in Field**) instead of one item per row. The file has a header row, columns in the order they first appear, ISO dates as Stocklake sends them, a point as decimal separator, a UTF-8 byte order mark so Excel reads it correctly, and nested values as dotted columns (`indicators.rsi`). Text that a spreadsheet could run as a formula (starting with `=`, `+`, `-` or `@`, but not a number) gets a leading apostrophe. The file is named from the ticker, the operation and the day (`AAPL-history-2026-11-06.csv`); **CSV File Name** sets your own. The item holds `fileName`, `rowCount` and `columns` for the next node. With Compare, tickers that could not be read stay as separate items with their `error` next to the file. Without rows there is no file.
+
 ## Symbols from earlier steps (version 2)
 
 Get Many and the Earnings Calendar have a **Symbol Source**:

@@ -1,5 +1,6 @@
 import type { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 
+import { csvOptionFields } from './CsvOptions';
 import { symbolLocatorField } from './shared';
 import { inputOption, manualOption, sourceFields } from './SymbolSource';
 
@@ -99,6 +100,15 @@ export const compareFields: INodeProperties[] = [
 			show: { resource: ['stock'], operation: ['compare'] },
 			hide: { rankBy: ['none'] },
 		},
+	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: { show: { resource: ['stock'], operation: ['compare'] } },
+		options: csvOptionFields,
 	},
 ];
 

@@ -102,13 +102,24 @@ test('version 2 keeps every version 1 parameter unchanged', () => {
 	// Version 2 shows Limit and Page only while Return All is off; that is the one
 	// change to a version 1 property's visibility, apart from the Symbols field, which
 	// is shown only while Symbol Source is a manual list.
+	// A Stocklake Tool (an AI agent) sees other fields for some of them; those are hidden for
+	// a tool (`hide: @tool`) and the tool's own copies are shown for it only (`show: @tool`).
 	const key = (p) => {
 		const show = { ...p.displayOptions?.show };
 		delete show.returnAll;
 		delete show.symbolSource;
-		return JSON.stringify([p.name, { ...p.displayOptions, show }]);
+		const hide = { ...p.displayOptions?.hide };
+		delete hide['@tool'];
+		const display = { ...p.displayOptions, show };
+		if (Object.keys(hide).length > 0) display.hide = hide;
+		else delete display.hide;
+		return JSON.stringify([p.name, display]);
 	};
-	const sigV2 = new Map(descriptionSignature(v2).properties.map((p) => [key(p), p]));
+	const sigV2 = new Map(
+		descriptionSignature(v2)
+			.properties.filter((p) => !p.displayOptions?.show?.['@tool'])
+			.map((p) => [key(p), p]),
+	);
 	for (const p of descriptionSignature(v1).properties) {
 		const same = sigV2.get(key(p));
 		assert.ok(same, `v2 lost ${p.name}`);

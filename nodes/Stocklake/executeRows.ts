@@ -3,6 +3,10 @@ import { NodeOperationError } from 'n8n-workflow';
 
 import { allowanceSeen, stocklakeApiRequest } from './GenericFunctions';
 import { COMPOSITE_OPERATIONS, executeComposite } from './executeComposite';
+import { csvItem, csvSubject } from './csv';
+import type { CsvOptions } from './csv';
+import { executeToolkit } from './toolkit';
+import { TOOLKIT_RESOURCE } from './toolCatalog';
 import { buildToolCall } from './ToolMapping';
 import {
 	LARGE_BATCH_CALLS,
@@ -306,6 +310,22 @@ async function itemOutput(
 		: await fetchRows.call(this, spec, toolName, callArguments, wanted, i);
 
 	const meta = includeMetadata ? { _meta: { ...fetched.metadata, ...symbolMeta } } : {};
+
+	// Download as CSV: the rows become one file. Rows that could not be read stay items.
+	if (options.downloadCsv === true && fetched.rows.length + fetched.extras.length > 0) {
+		const data = [...fetched.extras, ...fetched.rows].map((row) =>
+			simplify ? simplifyRow(row, spec.simplify) : row,
+		);
+		const subject =
+			typeof callArguments.symbol === 'string'
+				? callArguments.symbol
+				: Array.isArray(callArguments.symbols)
+					? csvSubject(callArguments.symbols as string[])
+					: [callArguments.preset, callArguments.sector].filter(Boolean).join('-') || undefined;
+		const file = await csvItem(this, data, options as CsvOptions, { operation, subject }, { item: i }, meta);
+		return [...withAllowance(this, i, [file]), ...invalidOutput];
+	}
+
 	const shaped = [...fetched.extras, ...fetched.rows].map((row) => ({
 		json: {
 			...(simplify ? simplifyRow(row, spec.simplify) : row),
@@ -335,6 +355,9 @@ export async function executeRows(this: IExecuteFunctions): Promise<INodeExecuti
 	const items = this.getInputData();
 	const returnData: INodeExecutionData[] = [];
 	const resource = this.getNodeParameter('resource', 0) as string;
+	// The Toolkit (Stocklake Tool) lets an agent pick the operation; it comes back here
+	// with the operation chosen.
+	if (resource === TOOLKIT_RESOURCE) return await executeToolkit.call(this);
 	const operation = this.getNodeParameter('operation', 0) as string;
 	if (COMPOSITE_OPERATIONS.has(`${resource}.${operation}`)) {
 		return await executeComposite.call(this, `${resource}.${operation}`);

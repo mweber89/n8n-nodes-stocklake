@@ -12,7 +12,9 @@ import {
 	snapshotFields,
 	snapshotOperation,
 } from './CompositeDescription';
+import { csvOptionFields } from './CsvOptions';
 import { symbolLocatorField, withDocsLinks } from './shared';
+import { withToolVariant } from './ToolDescription';
 import { calendarSourceFields, getManySourceFields } from './SymbolSource';
 
 /**
@@ -323,6 +325,8 @@ function outputFields(): INodeProperties[] {
 				default: {},
 				displayOptions: { show },
 				options: [
+					csvOptionFields[0],
+					csvOptionFields[1],
 					{
 						displayName: 'Include Response Metadata',
 						name: 'includeMetadata',
@@ -331,6 +335,7 @@ function outputFields(): INodeProperties[] {
 						description:
 							'Whether to add the details the API returns around the rows (counts, applied filters, notes) to every item as _meta',
 					},
+					csvOptionFields[2],
 				],
 			},
 		];
@@ -401,7 +406,7 @@ const requestOptionsField: INodeProperties = {
 
 /** Version 1's properties plus the five new operations, one item per row, Simplify,
  * Return All / Limit and the metadata option. */
-export const v2Properties: INodeProperties[] = withLoadedOptions([
+export const v2Properties: INodeProperties[] = withToolVariant(withLoadedOptions([
 	...withSymbolSource(
 		withReturnAll([
 			...properties.flatMap((property): INodeProperties[] => {
@@ -426,4 +431,4 @@ export const v2Properties: INodeProperties[] = withLoadedOptions([
 	),
 	...outputFields(),
 	requestOptionsField,
-]);
+]));

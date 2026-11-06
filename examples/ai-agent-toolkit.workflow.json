@@ -1,0 +1,129 @@
+{
+  "name": "Stocklake - AI agent with a filtered toolkit",
+  "nodes": [
+    {
+      "id": "a1b2c300-0001-4000-8000-000000000001",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "webhookId": "a1b2c300-0001-4000-8000-0000000000ff"
+    },
+    {
+      "id": "a1b2c300-0002-4000-8000-000000000002",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a market research assistant with access to Stocklake stock market data (quotes are delayed about 15 minutes).\n\nAlways call the Stocklake tool to get real numbers before answering. Never answer a price, indicator or ranking from memory. Quote the figures you get back and say what they imply. Keep answers to a few sentences."
+        }
+      }
+    },
+    {
+      "id": "a1b2c300-0003-4000-8000-000000000003",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        240
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "your-model-name"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a1b2c300-0004-4000-8000-000000000004",
+      "name": "Stocklake",
+      "type": "n8n-nodes-stocklake.stocklakeTool",
+      "typeVersion": 2,
+      "position": [
+        380,
+        240
+      ],
+      "parameters": {
+        "resource": "toolkit",
+        "operation": "choose",
+        "toolkitOperations": [
+          "stock.get",
+          "stock.compare",
+          "stock.getHistory",
+          "screener.screen",
+          "market.getPulse",
+          "market.getMovers",
+          "earnings.getCalendar"
+        ]
+      }
+    },
+    {
+      "id": "a1b2c300-0005-4000-8000-000000000005",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -260
+      ],
+      "parameters": {
+        "content": "## AI agent with Stocklake as a tool\nThe Stocklake tool is set to **Toolkit**: one tool that offers several operations, and the agent picks one from the question.\n\n**Operations the Agent May Use** is the filter. This agent sees seven read-only market data operations (get a stock, compare, history, screener, market pulse, movers, earnings calendar) and cannot run any other. Fewer operations make a better choice and a shorter prompt.\n\nTry: *Which of AAPL, MSFT and GOOGL is cheapest on forward P/E?* or *Show me oversold technology stocks.*\n\nThe agent needs a chat model that supports tool calling; set the model name. Everything here works without Pro.\n\nTo give an agent one operation only, set Resource and Operation as usual instead: the ticker, days and limit are filled in by the agent.",
+        "width": 560,
+        "height": 380
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stocklake": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
