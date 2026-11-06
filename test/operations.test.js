@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const { Stocklake } = require('../dist/nodes/Stocklake/Stocklake.node');
 const { createFakeMcp, loadNode, runNode } = require('./helpers/fakeMcp');
 const { cases, v2Cases } = require('./fixtures/operations');
+const { LIST_SPECS } = require('../dist/nodes/Stocklake/rows');
 
 const MCP_URL = 'https://api.stocklake.dev/mcp';
 
@@ -22,12 +23,18 @@ for (const version of [1, 2]) {
 
 			const output = await runNode(node, { params: c.params, fake, typeVersion: version });
 
+			const args = version === 2 && c.argsV2 ? c.argsV2 : c.args;
 			assert.deepEqual(fake.calls, [
-				{ toolName: c.tool, arguments: c.args, url: MCP_URL, credential: null },
+				{ toolName: c.tool, arguments: args, url: MCP_URL, credential: null },
 			]);
-			// Response mapping: one output item holding the whole structured response,
-			// paired with the input item it came from.
-			assert.deepEqual(output, [[{ json: c.response, pairedItem: { item: 0 } }]]);
+			// Response mapping. Version 1, and every operation that is not a list in version
+			// 2: one output item holding the whole structured response, paired with the
+			// input item it came from. List operations in version 2 are split into rows,
+			// which test/rows.test.js covers with realistic responses.
+			const isList = version === 2 && `${c.params.resource}.${c.params.operation}` in LIST_SPECS;
+			if (!isList) {
+				assert.deepEqual(output, [[{ json: c.response, pairedItem: { item: 0 } }]]);
+			}
 		});
 	}
 }

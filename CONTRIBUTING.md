@@ -31,6 +31,17 @@ the 0.1.1 build produced (`test/fixtures/v1-golden.json`), and compares version 
 parameter definitions with `test/fixtures/v1-parameters-golden.json`. If one of
 those fails after your change, you changed version 1.
 
+## Version 2 output
+
+Version 2 runs `executeRows.ts`; version 1 keeps `execute.ts`. `rows.ts` holds, per
+list operation, where the rows are in the response, which fields Simplify keeps, the
+tool's per-call cap and how it pages (`LIST_SPECS`). To make an operation list-shaped,
+add it there; the Return All, Limit, Simplify and Options fields are generated from
+the same table (`descriptions/V2Additions.ts`). `test/rows.test.js` covers splitting,
+Simplify, Limit, paging and paired items against realistic responses
+(`test/fixtures/responses.js`), and checks that version 1 still returns the whole
+response byte for byte.
+
 ## Adding or changing an operation
 
 1. Add the case to `nodes/Stocklake/ToolMapping.ts` and its parameters to the

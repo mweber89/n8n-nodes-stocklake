@@ -1,5 +1,6 @@
 import type { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 
+import { LIST_SPECS, listOperations } from '../rows';
 import { properties } from './NodeDescription';
 import { symbolLocatorField, withDocsLinks } from './shared';
 
@@ -174,6 +175,18 @@ const newFields: INodeProperties[] = [
 		displayOptions: { show: { resource: ['stock'], operation: ['getAnalystTrend'] } },
 	},
 
+	// get_earnings_calendar (version 2 adds Limit and paging to it)
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		typeOptions: { minValue: 1 },
+		description: 'Max number of results to return',
+		hint: 'Without Pro the API returns the 5 largest companies, whatever this is set to.',
+		displayOptions: { show: { resource: ['earnings'], operation: ['getCalendar'] } },
+	},
+
 	// get_economic_calendar
 	{
 		displayName: 'Days Ahead',
@@ -225,14 +238,101 @@ const newFields: INodeProperties[] = [
 	},
 ];
 
-/** Version 1's properties plus the five version-2 operations and their fields. */
+/** `resource.operation` of a property that is shown for exactly one operation. */
+function operationKey(property: INodeProperties): string | undefined {
+	const show = property.displayOptions?.show;
+	const resource = show?.resource?.[0];
+	const operation = show?.operation?.[0];
+	return typeof resource === 'string' && typeof operation === 'string'
+		? `${resource}.${operation}`
+		: undefined;
+}
+
+function returnAllField(resource: string, operation: string): INodeProperties {
+	return {
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+		displayOptions: { show: { resource: [resource], operation: [operation] } },
+	};
+}
+
+/** Adds Return All in front of each Limit, and hides Limit (and Page) while it is on. */
+function withReturnAll(list: INodeProperties[]): INodeProperties[] {
+	const out: INodeProperties[] = [];
+	for (const property of list) {
+		const key = operationKey(property);
+		const spec = key ? LIST_SPECS[key] : undefined;
+		const isLimit = spec?.limit?.param === property.name;
+		const isPage = spec?.paging === 'page' && property.name === 'page';
+		if (!key || !spec || !(isLimit || isPage)) {
+			out.push(property);
+			continue;
+		}
+		const [resource, operation] = key.split('.');
+		if (isLimit) out.push(returnAllField(resource, operation));
+		out.push({
+			...property,
+			displayOptions: {
+				...property.displayOptions,
+				show: { ...property.displayOptions?.show, returnAll: [false] },
+			},
+		});
+	}
+	return out;
+}
+
+/** Simplify and the Options collection, once per resource that has list operations. */
+function outputFields(): INodeProperties[] {
+	const resources = [...new Set(Object.keys(LIST_SPECS).map((key) => key.split('.')[0]))];
+	return resources.flatMap((resource): INodeProperties[] => {
+		const show = { resource: [resource], operation: listOperations(resource) };
+		return [
+			{
+				displayName: 'Simplify',
+				name: 'simplify',
+				type: 'boolean',
+				default: true,
+				description:
+					'Whether to return a flat, chosen set of fields for each row instead of every field the API sends',
+				displayOptions: { show },
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				displayOptions: { show },
+				options: [
+					{
+						displayName: 'Include Response Metadata',
+						name: 'includeMetadata',
+						type: 'boolean',
+						default: false,
+						description:
+							'Whether to add the details the API returns around the rows (counts, applied filters, notes) to every item as _meta',
+					},
+				],
+			},
+		];
+	});
+}
+
+/** Version 1's properties plus the five new operations, one item per row, Simplify,
+ * Return All / Limit and the metadata option. */
 export const v2Properties: INodeProperties[] = [
-	...properties.map((property) => {
-		if (property.name !== 'operation') return property;
-		const resource = property.displayOptions?.show?.resource?.[0] as string;
-		if (resource === 'stock') return withExtraOperations(property, 'stock', stockOperationsV2);
-		if (resource === 'market') return withExtraOperations(property, 'market', marketOperationsV2);
-		return property;
-	}),
-	...newFields,
+	...withReturnAll([
+		...properties.map((property) => {
+			if (property.name !== 'operation') return property;
+			const resource = property.displayOptions?.show?.resource?.[0] as string;
+			if (resource === 'stock') return withExtraOperations(property, 'stock', stockOperationsV2);
+			if (resource === 'market') return withExtraOperations(property, 'market', marketOperationsV2);
+			return property;
+		}),
+		...newFields,
+	]),
+	...outputFields(),
 ];

@@ -40,13 +40,20 @@ function liveHelpers(key) {
 		}
 		return JSON.parse(text.slice(text.indexOf('{')));
 	};
-	return { httpRequest: send, httpRequestWithAuthentication: (_credential, options) => send(options) };
+	return {
+		httpRequest: send,
+		httpRequestWithAuthentication: (_credential, options) => send(options),
+	};
 }
 
 (async () => {
 	const node = loadNode(Stocklake, 2);
 	// The five new operations by default; LIVE_ALL=1 also runs the original seventeen.
-	const selected = process.env.LIVE_ALL ? [...cases, ...v2Cases] : v2Cases;
+	const selected = (process.env.LIVE_ALL ? [...cases, ...v2Cases] : v2Cases).map((c) =>
+		// The Signal fixture uses a direction the node does not offer (it is only there to
+		// pin the version 1 wire format); ask the real API for a valid one.
+		c.params.direction === 'LONG' ? { ...c, params: { ...c.params, direction: 'POSITIVE' } } : c,
+	);
 	let failures = 0;
 
 	for (const [tier, key] of tiers) {
@@ -59,13 +66,65 @@ function liveHelpers(key) {
 					typeVersion: 2,
 					apiKeyCredential: Boolean(key),
 				});
-				const json = out[0][0].json;
-				console.log(`ok     ${c.name}  [${Object.keys(json).slice(0, 6).join(', ')}]`);
+				const first = out[0][0]?.json ?? {};
+				console.log(
+					`ok     ${c.name}  ${out[0].length} item(s) [${Object.keys(first).slice(0, 5).join(', ')}]`,
+				);
 			} catch (error) {
 				// A Pro-only operation refused for guest/free is the expected answer.
 				const expected = tier !== 'pro' && c.name.startsWith('stock.getAnalystTrend');
 				if (!expected) failures++;
-				console.log(`${expected ? 'denied' : 'FAIL  '} ${c.name}  ${String(error.message).split('\n')[0]}`);
+				console.log(
+					`${expected ? 'denied' : 'FAIL  '} ${c.name}  ${String(error.message).split('\n')[0]}`,
+				);
+			}
+		}
+	}
+
+	// Paging and Return All, which only show against the real API.
+	const rlv = (value) => ({ __rl: true, mode: 'id', value });
+	const paging = [
+		[
+			'Activity, Return All',
+			{ resource: 'stock', operation: 'getActivity', symbol: rlv('NVDA'), returnAll: true },
+		],
+		[
+			'Activity, Limit 60 (two pages)',
+			{ resource: 'stock', operation: 'getActivity', symbol: rlv('NVDA'), maxResults: 60 },
+		],
+		[
+			'Earnings Calendar, Return All',
+			{ resource: 'earnings', operation: 'getCalendar', returnAll: true },
+		],
+		[
+			'Get Many, 30 symbols (two batches)',
+			{
+				resource: 'stock',
+				operation: 'getMany',
+				symbols:
+					'AAPL,MSFT,NVDA,AMZN,GOOGL,META,TSLA,AMD,INTC,ORCL,CRM,ADBE,NFLX,CSCO,QCOM,TXN,AVGO,IBM,UBER,SHOP,PYPL,SNOW,PLTR,COIN,SOFI,RKLB,F,GM,BA,DIS',
+			},
+		],
+		[
+			'Screener, Return All',
+			{ resource: 'screener', operation: 'screen', preset: 'momentum', returnAll: true },
+		],
+		['Movers, Return All', { resource: 'market', operation: 'getMovers', returnAll: true }],
+	];
+	for (const [tier, key] of tiers) {
+		console.log(`\n== paging, ${tier}`);
+		for (const [label, params] of paging) {
+			try {
+				const out = await runNode(node, {
+					params,
+					fake: liveHelpers(key),
+					typeVersion: 2,
+					apiKeyCredential: Boolean(key),
+				});
+				console.log(`ok     ${label}  ${out[0].length} item(s)`);
+			} catch (error) {
+				failures++;
+				console.log(`FAIL   ${label}  ${String(error.message).split('\n')[0]}`);
 			}
 		}
 	}

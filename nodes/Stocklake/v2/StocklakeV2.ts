@@ -9,7 +9,7 @@ import type {
 import { searchSymbols } from '../GenericFunctions';
 import { v2Properties } from '../descriptions/V2Additions';
 import { versionDescription } from '../descriptions/NodeDescription';
-import { executeToolCallPerItem } from '../execute';
+import { executeRows } from '../executeRows';
 
 /** Version 2: the default for new nodes. It starts out identical to version 1 and is
  * where the 2.0 changes land (new operations, row-level output). Anything that would
@@ -24,6 +24,6 @@ export class StocklakeV2 implements INodeType {
 	methods = { listSearch: { searchSymbols } };
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		return await executeToolCallPerItem.call(this);
+		return await executeRows.call(this);
 	}
 }

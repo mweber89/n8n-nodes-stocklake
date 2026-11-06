@@ -161,6 +161,8 @@ const cases = [
 		params: { resource: 'earnings', operation: 'getCalendar', days: 10 },
 		tool: 'get_earnings_calendar',
 		args: { days: 10 },
+		// Version 2 also sends the Limit (default 50) so the call can be paged.
+		argsV2: { days: 10, limit: 50 },
 		response: { count: 1, earnings: [{ symbol: 'AAPL', date: '2026-11-12' }] },
 	},
 	{

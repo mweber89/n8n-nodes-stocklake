@@ -47,6 +47,28 @@ The **Symbol** field on single-stock operations is a Resource Locator: search by
 
 The node has two versions. **Version 2** is the default for new nodes. **Version 1** is the node as published in 0.1.x: workflows saved with it keep running with the same parameters and the same output, and are never converted automatically. To move a node to version 2, open its settings and pick the new version.
 
+## Output (version 2)
+
+Version 2 behaves like a native n8n node. Operations that return a list give **one item per row**, so you can wire them straight into Filter, Sort, Split In Batches or a spreadsheet node without splitting a blob first:
+
+- Stock: Get Many, Get History, Get Indicator History, Get News, Get Filings, Get Activity, Get Analyst Trend
+- Screener: Screen Stocks
+- Market: Get Movers (one item per mover, with a `category` field), Get Economic Calendar (rows carry a `bucket` of `released_recent` or `upcoming`)
+- Earnings: Get Calendar, Get Intelligence
+- News: Get Feed
+- Signal: Get Many
+- Watchlist: Get
+
+Every other operation (Stock: Get, Get Research, Get Financials, Get Insider Activity; Market: Get Pulse, Get Assessment; Sector: Get Intelligence) returns the whole response as one item.
+
+- **Simplify** (on by default) returns a flat, chosen set of fields per row. Turn it off for every field the API returns, including nested objects. Rows that lack a chosen field simply leave it out.
+- **Return All / Limit.** With Return All off, **Limit** is the number of rows you get back. With it on, you get everything the API will give you: Activity reads page after page, the Earnings Calendar pages through the whole window on Pro, Get Many sends symbols in batches of 25, and the other operations ask for the API's maximum per call (Screener 25, Signals 50, News Feed 25, Earnings Intelligence 25, Filings 25, Movers 20 per category). A Limit above an operation's per-call maximum is held to that maximum; Activity and the Earnings Calendar read further pages to reach it. Each page or batch counts as a call on your daily limit, as the API bills it.
+- **Include Response Metadata** (under Options) adds what the API returns around the rows, such as counts, applied filters and notes about the plan, to every item as `_meta`. If a list comes back empty, that one item is still returned so the note is not lost.
+- Rows from History, Indicator History, News and Analyst Trend carry the `symbol` they belong to, so rows from several input items stay distinguishable after a Merge.
+- Every output item is paired with the input item that produced it, so expressions such as `$('Stocklake').item` work.
+
+Version 1 keeps returning the whole response as one item; its output has not changed.
+
 ## Example workflow
 
 A daily oversold-stock digest: a Schedule Trigger fires two Stocklake nodes in parallel (Market → Get Pulse, Screener → Screen Stocks with the `oversold` preset), a Code node formats the two results into one digest string, and a final node is left ready for you to wire into Slack, Send Email, Google Sheets, or whatever you already use for notifications.

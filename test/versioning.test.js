@@ -74,13 +74,21 @@ test('version 2 adds exactly the five new operations; version 1 does not have th
 test('version 2 keeps every version 1 parameter unchanged', () => {
 	const v1 = new Stocklake().nodeVersions[1].description;
 	const v2 = new Stocklake().nodeVersions[2].description;
-	const sigV2 = new Map(
-		descriptionSignature(v2).properties.map((p) => [JSON.stringify([p.name, p.displayOptions]), p]),
-	);
+	// Version 2 shows Limit and Page only while Return All is off; that is the one
+	// change to a version 1 property's visibility.
+	const key = (p) => {
+		const show = { ...p.displayOptions?.show };
+		delete show.returnAll;
+		return JSON.stringify([p.name, { ...p.displayOptions, show }]);
+	};
+	const sigV2 = new Map(descriptionSignature(v2).properties.map((p) => [key(p), p]));
 	for (const p of descriptionSignature(v1).properties) {
-		const same = sigV2.get(JSON.stringify([p.name, p.displayOptions]));
+		const same = sigV2.get(key(p));
 		assert.ok(same, `v2 lost ${p.name}`);
-		if (p.name !== 'operation') assert.deepEqual(same, p, p.name);
+		if (p.name === 'operation') continue;
+		const { displayOptions: _v2Display, ...restV2 } = same;
+		const { displayOptions: _v1Display, ...restV1 } = p;
+		assert.deepEqual(restV2, restV1, p.name);
 	}
 });
 
