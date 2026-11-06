@@ -205,17 +205,19 @@ test('a run of more than 25 calls is announced before the first call', async () 
 	};
 	await run({ params: fromItems(tickers), fake, hints });
 
+	// The stub rows carry no rating, so the plan hint (reliability.test.js) comes too.
+	const cost = hints.filter((h) => /daily allowance/.test(h.message));
 	assert.equal(hintsBeforeFirstCall, 1);
-	assert.equal(hints.length, 1);
-	assert.match(hints[0].message, /About 60 calls against your daily allowance/);
-	assert.match(hints[0].message, /3 requests of up to 25/);
+	assert.equal(cost.length, 1);
+	assert.match(cost[0].message, /About 60 calls against your daily allowance/);
+	assert.match(cost[0].message, /3 requests of up to 25/);
 });
 
 test('a run of 25 calls or fewer shows no notice', async () => {
 	const fake = createFakeMcp({ get_stocks: stocksTool() });
 	const hints = [];
 	await run({ params: fromItems(['AAPL', 'MSFT']), fake, hints });
-	assert.deepEqual(hints, []);
+	assert.deepEqual(hints.filter((h) => /daily allowance/.test(h.message)), []);
 });
 
 // -------------------------------------------------------------- Manual list

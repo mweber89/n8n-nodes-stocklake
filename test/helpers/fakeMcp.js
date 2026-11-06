@@ -22,6 +22,7 @@
 function createFakeMcp(tools = {}, { dailyLimit = 200, search = () => [] } = {}) {
 	const calls = [];
 	const searches = [];
+	const timeouts = [];
 
 	async function handle(options, credentialName) {
 		if (options.method === 'GET' && String(options.url).endsWith('/api/search')) {
@@ -31,7 +32,14 @@ function createFakeMcp(tools = {}, { dailyLimit = 200, search = () => [] } = {})
 		const result = await handleToolCall(options, credentialName);
 		// Like n8n with returnFullResponse: the body plus the response headers, as sent by the API.
 		return options.returnFullResponse
-			? { statusCode: 200, headers: { 'x-ratelimit-limit': String(dailyLimit) }, body: result }
+			? {
+					statusCode: 200,
+					headers: {
+						'x-ratelimit-limit': String(dailyLimit),
+						'x-ratelimit-remaining': String(Math.max(0, dailyLimit - calls.length)),
+					},
+					body: result,
+				}
 			: result;
 	}
 
@@ -48,6 +56,7 @@ function createFakeMcp(tools = {}, { dailyLimit = 200, search = () => [] } = {})
 			url: options.url,
 			credential: credentialName ?? null,
 		});
+		timeouts.push(options.timeout);
 
 		if (!(toolName in tools)) {
 			return {
@@ -84,6 +93,8 @@ function createFakeMcp(tools = {}, { dailyLimit = 200, search = () => [] } = {})
 	return {
 		calls,
 		searches,
+		/** The `timeout` option of every request, in order (undefined when none was set). */
+		timeouts,
 		httpRequest: (options) => handle(options, null),
 		httpRequestWithAuthentication(credentialName, options) {
 			return handle(options, credentialName);

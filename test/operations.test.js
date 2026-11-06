@@ -112,7 +112,8 @@ test('a tool error reaches the user as a node error, or as an item with continue
 		typeVersion: 2,
 		continueOnFail: true,
 	});
-	assert.deepEqual(output, [
-		[{ json: { error: "No stock found for 'NOPE'" }, pairedItem: { item: 0 } }],
-	]);
+	assert.equal(output[0].length, 1);
+	assert.equal(output[0][0].json.error, "No stock found for 'NOPE'");
+	assert.match(output[0][0].json.errorDescription, /"NOPE" is not in Stocklake/);
+	assert.deepEqual(output[0][0].pairedItem, { item: 0 });
 });

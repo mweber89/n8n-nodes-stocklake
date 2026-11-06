@@ -71,6 +71,22 @@ Every other operation (Stock: Get, Get Research, Get Financials, Get Insider Act
 
 Version 1 keeps returning the whole response as one item; its output has not changed.
 
+## Limits and errors (version 2)
+
+**Request Options** (on every operation) control how the node talks to Stocklake:
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| Max Retries | 3 | How often a call is retried when Stocklake answers 429 (too many requests). The node waits as long as `Retry-After` says, or 1, 2, 4 seconds and so on; a wait longer than 30 seconds is not retried. |
+| Timeout | 30000 ms | How long one request may take. |
+| Include Remaining Calls | off | Adds `_stocklake.remainingCalls` (and `dailyLimit`) to every item, as Stocklake reports them, so a workflow can branch before the allowance runs out. The figure can be a call or two above the true one. |
+
+**A used-up daily allowance is never retried.** The node stops with "Daily limit reached ... Resets at 00:00 UTC" and, in the same run, makes no further request. A request that costs more than the calls left (a long symbol list) is refused with the number left; send fewer symbols.
+
+Every failure is a node error whose description says what to do: which plan an operation needs, which symbol was not found, the accepted values the API lists for an invalid argument, whether a timeout or an unreachable server is the cause. With **Continue On Fail** a failed item becomes `{ "error": "...", "errorDescription": "..." }` (plus `httpCode` for an HTTP failure) paired with its input item; a failure in a run over the whole input (From input items, From my watchlist) is paired with all of them.
+
+When a free or guest credential gets a response with fields left out, the node adds an execution hint to the output ("Rating and AI fields need Pro" or the API's own note on what the plan leaves out), once per run.
+
 ## Symbols from earlier steps (version 2)
 
 Get Many and the Earnings Calendar have a **Symbol Source**:

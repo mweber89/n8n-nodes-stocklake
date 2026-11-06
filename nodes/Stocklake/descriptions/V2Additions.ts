@@ -348,6 +348,43 @@ function withSymbolSource(list: INodeProperties[]): INodeProperties[] {
 	return out;
 }
 
+/** How the node talks to Stocklake, for every operation: retries, timeout and whether
+ * to add the calls left today to the output. */
+const requestOptionsField: INodeProperties = {
+	displayName: 'Request Options',
+	name: 'requestOptions',
+	type: 'collection',
+	placeholder: 'Add Request Option',
+	default: {},
+	options: [
+		{
+			displayName: 'Include Remaining Calls',
+			name: 'includeRemainingCalls',
+			type: 'boolean',
+			default: false,
+			description:
+				'Whether to add the calls left today, as Stocklake reports them, to every item as _stocklake.remainingCalls. Use it to branch before the allowance runs out. The figure can be a call or two above the true one.',
+		},
+		{
+			displayName: 'Max Retries',
+			name: 'maxRetries',
+			type: 'number',
+			typeOptions: { minValue: 0, maxValue: 10 },
+			default: 3,
+			description:
+				'How often to retry a call that Stocklake answers with 429 (too many requests), waiting as long as it asks, or 1, 2, 4 seconds and so on. A used-up daily allowance is never retried: the node stops and says when it resets.',
+		},
+		{
+			displayName: 'Timeout',
+			name: 'timeout',
+			type: 'number',
+			typeOptions: { minValue: 1000 },
+			default: 30000,
+			description: 'Time in milliseconds to wait for Stocklake to answer one request',
+		},
+	],
+};
+
 /** Version 1's properties plus the five new operations, one item per row, Simplify,
  * Return All / Limit and the metadata option. */
 export const v2Properties: INodeProperties[] = withLoadedOptions([
@@ -365,4 +402,5 @@ export const v2Properties: INodeProperties[] = withLoadedOptions([
 		]),
 	),
 	...outputFields(),
+	requestOptionsField,
 ]);

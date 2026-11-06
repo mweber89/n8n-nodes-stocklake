@@ -68,6 +68,16 @@ n8n does.
 delayed about 15 minutes) and on any data-provider or model name in files that
 ship.
 
+## Reliability
+
+`stocklakeApiRequest` (`GenericFunctions.ts`) owns every failure path. Version 2 only (node `typeVersion` 2 or more) retries a 429 that is not a used-up allowance, applies the Timeout option, remembers the allowance headers (`allowanceSeen`) and adds plan hints; version 1 keeps no retries, no timeout and no hints.
+
+- `classifyRateLimit` decides what a 429 is from `x-ratelimit-remaining` (0 = daily, above 0 = batch too large), `Retry-After` and the body text. `describeRateLimit` words it. Only a `transient` one is retried.
+- A message that stops the run (`stopsRun`: daily limit, used-up guest limit) is kept per execution (`callState`, keyed by the execute context), so later items fail without a request.
+- Error text is by class: `describeApiError` (tool errors, plan), `describeAuthFailure` (401, 429), `describeTransportFailure` (timeout, unreachable, 5xx). A class without text is a gap: add the text and a test in `test/reliability.test.js`.
+- `timing.sleep` is the one place the node waits; tests replace it.
+- The fake server (`test/helpers/fakeMcp.js`) sends `x-ratelimit-limit` and `-remaining` and records each request's timeout in `fake.timeouts`.
+
 ## Symbol Source
 
 Get Many and Earnings Calendar (version 2) take their tickers from a manual list,

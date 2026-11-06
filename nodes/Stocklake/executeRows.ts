@@ -1,7 +1,7 @@
 import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
-import { stocklakeApiRequest } from './GenericFunctions';
+import { allowanceSeen, stocklakeApiRequest } from './GenericFunctions';
 import { buildToolCall } from './ToolMapping';
 import {
 	LARGE_BATCH_CALLS,
@@ -25,6 +25,43 @@ import type { ListSpec } from './rows';
 
 /** Stops a paged read that does not end (a server that keeps saying "more"). */
 const MAX_PAGES = 200;
+
+/** The calls the API says are left today, as `_stocklake`, for the Request Option
+ * "Include Remaining Calls". Left out when the API sent no figure. */
+function withAllowance(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	items: INodeExecutionData[],
+): INodeExecutionData[] {
+	const chosen = (context.getNodeParameter('requestOptions', itemIndex, {}) ?? {}) as IDataObject;
+	if (chosen.includeRemainingCalls !== true) return items;
+	const { remainingCalls, dailyLimit } = allowanceSeen(context);
+	if (remainingCalls === undefined) return items;
+	const stocklake: IDataObject = { remainingCalls };
+	if (dailyLimit !== undefined) stocklake.dailyLimit = dailyLimit;
+	return items.map((item) => ({ ...item, json: { ...item.json, _stocklake: stocklake } }));
+}
+
+/** What a failed item becomes under "Continue On Fail": the message in `json.error`, what to
+ * do about it next to it, and the input item(s) it belongs to. */
+function errorItem(
+	error: unknown,
+	pairedItem: INodeExecutionData['pairedItem'],
+): INodeExecutionData {
+	const { message, description, httpCode } = (error ?? {}) as {
+		message?: string;
+		description?: string | null;
+		httpCode?: string;
+	};
+	return {
+		json: {
+			error: message ?? String(error),
+			...(description ? { errorDescription: description } : {}),
+			...(httpCode ? { httpCode } : {}),
+		},
+		pairedItem,
+	};
+}
 
 interface Fetched {
 	rows: IDataObject[];
@@ -196,9 +233,13 @@ async function itemOutput(
 	// Not list-shaped (Get, Research, Pulse, Financials, ...): the whole response, one item.
 	if (!spec) {
 		const response = await stocklakeApiRequest.call(this, toolName, toolArguments, i);
-		return this.helpers.constructExecutionMetaData(
-			this.helpers.returnJsonArray(response as IDataObject),
-			{ itemData: { item: i } },
+		return withAllowance(
+			this,
+			i,
+			this.helpers.constructExecutionMetaData(
+				this.helpers.returnJsonArray(response as IDataObject),
+				{ itemData: { item: i } },
+			),
 		);
 	}
 
@@ -275,9 +316,9 @@ async function itemOutput(
 	// No rows: nothing to pass on, unless the caller asked for the metadata, which
 	// is then the only place a note such as "no data in this window" is visible.
 	if (shaped.length === 0 && invalidOutput.length === 0 && includeMetadata) {
-		return [{ json: meta as IDataObject, pairedItem: { item: i } }];
+		return withAllowance(this, i, [{ json: meta as IDataObject, pairedItem: { item: i } }]);
 	}
-	return [...shaped, ...invalidOutput];
+	return [...withAllowance(this, i, shaped), ...invalidOutput];
 }
 
 /**
@@ -296,12 +337,19 @@ export async function executeRows(this: IExecuteFunctions): Promise<INodeExecuti
 	const operation = this.getNodeParameter('operation', 0) as string;
 	const symbolOperation = SYMBOL_OPERATIONS[`${resource}.${operation}`];
 
-	const guarded = async (i: number, work: () => Promise<INodeExecutionData[]>) => {
+	// A run that works on the whole input at once (From input items, From my watchlist)
+	// belongs to every input item, so a failure there is paired with all of them.
+	const allItems = items.map((_, k) => ({ item: k }));
+	const guarded = async (
+		i: number,
+		work: () => Promise<INodeExecutionData[]>,
+		pairedItem: INodeExecutionData['pairedItem'] = { item: i },
+	) => {
 		if (!this.continueOnFail()) return await work();
 		try {
 			return await work();
 		} catch (error) {
-			return [{ json: { error: (error as Error).message }, pairedItem: { item: i } }];
+			return [errorItem(error, pairedItem)];
 		}
 	};
 
@@ -325,7 +373,7 @@ export async function executeRows(this: IExecuteFunctions): Promise<INodeExecuti
 				try {
 					shared = await planFor.call(this, source, items);
 				} catch (error) {
-					return [[{ json: { error: (error as Error).message }, pairedItem: { item: 0 } }]];
+					return [[errorItem(error, allItems)]];
 				}
 			}
 		} else if (source === 'manual') {
@@ -342,7 +390,7 @@ export async function executeRows(this: IExecuteFunctions): Promise<INodeExecuti
 	}
 
 	if (shared) {
-		returnData.push(...(await guarded(0, () => itemOutput.call(this, 0, shared))));
+		returnData.push(...(await guarded(0, () => itemOutput.call(this, 0, shared), allItems)));
 		return [returnData];
 	}
 	for (let i = 0; i < items.length; i++) {
