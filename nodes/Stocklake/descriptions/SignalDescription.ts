@@ -1,6 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { withDocsLinks } from './shared';
 
-export const signalOperations: INodeProperties = {
+const signalOperationsBase: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
 	type: 'options',
@@ -17,6 +18,8 @@ export const signalOperations: INodeProperties = {
 		},
 	],
 };
+
+export const signalOperations = withDocsLinks('signal', signalOperationsBase);
 
 export const signalFields: INodeProperties[] = [
 	{

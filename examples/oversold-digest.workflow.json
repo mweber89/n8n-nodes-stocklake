@@ -17,7 +17,7 @@
       "id": "a1b2c3d4-0002-4000-8000-000000000002",
       "name": "Market Pulse",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [220, -80],
       "parameters": {
         "resource": "market",
@@ -28,7 +28,7 @@
       "id": "a1b2c3d4-0003-4000-8000-000000000003",
       "name": "Oversold Screen",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [220, 80],
       "parameters": {
         "resource": "screener",

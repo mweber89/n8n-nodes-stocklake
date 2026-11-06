@@ -1,0 +1,32 @@
+{
+	"node": "n8n-nodes-stocklake.stocklake",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Finance & Accounting", "Analytics", "Data & Storage"],
+	"resources": {
+		"credentialDocumentation": [
+			{ "url": "https://stocklake.dev/docs#auth" },
+			{ "url": "https://stocklake.dev/docs#oauth" }
+		],
+		"primaryDocumentation": [{ "url": "https://stocklake.dev/docs/tools" }]
+	},
+	"alias": [
+		"stock",
+		"stocks",
+		"equity",
+		"market data",
+		"quote",
+		"ticker",
+		"rsi",
+		"macd",
+		"technical analysis",
+		"screener",
+		"earnings",
+		"insider trading",
+		"fundamentals",
+		"sector",
+		"watchlist",
+		"signals",
+		"finance"
+	]
+}

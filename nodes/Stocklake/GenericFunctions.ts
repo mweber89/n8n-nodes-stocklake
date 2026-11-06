@@ -40,7 +40,7 @@ interface ApiErrorText {
 /**
  * The API signals failure in three different shapes depending on which layer
  * rejected the call, and only one of them is a JSON-RPC `error` (all three
- * confirmed live against api.stocklake.dev):
+ * confirmed against api.stocklake.dev):
  *
  *   1. HTTP non-2xx        — bad/inactive key (401), rate limit (429). Thrown by
  *                            the HTTP helper before we ever see a body.
@@ -112,7 +112,7 @@ let requestCounter = 0;
 /**
  * Calls one Stocklake MCP tool over the Streamable HTTP transport and returns
  * the already-parsed payload. The server is stateless — no session/initialize
- * handshake is needed before tools/call (confirmed live against api.stocklake.dev).
+ * handshake is needed before tools/call (confirmed against api.stocklake.dev).
  *
  * Every tool response carries `structuredContent` pre-parsed alongside the
  * `content[0].text` JSON string, so this reads structuredContent first and
@@ -176,10 +176,7 @@ export async function stocklakeApiRequest(
 
 	// Shape 1 (see describeApiError): a protocol-level JSON-RPC rejection.
 	if (response.error) {
-		const { message, description } = describeApiError(
-			response.error.data,
-			response.error.message,
-		);
+		const { message, description } = describeApiError(response.error.data, response.error.message);
 		throw new NodeOperationError(this.getNode(), message, {
 			itemIndex,
 			description: description ?? response.error.message,
@@ -223,10 +220,7 @@ export async function stocklakeApiRequest(
 	if (parsed !== undefined && typeof parsed === 'object' && parsed !== null) {
 		const body = parsed as IDataObject;
 		if (body.error !== undefined) {
-			const { message, description } = describeApiError(
-				body,
-				'Stocklake API returned an error',
-			);
+			const { message, description } = describeApiError(body, 'Stocklake API returned an error');
 			throw new NodeOperationError(this.getNode(), message, { itemIndex, description });
 		}
 		return body;

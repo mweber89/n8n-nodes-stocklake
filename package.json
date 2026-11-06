@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-stocklake",
   "version": "0.1.1",
-  "description": "n8n community node for the Stocklake API — real-time and historical US/international stock market data, technical indicators, AI-synthesized research, insider/institutional activity, earnings intelligence, and macro/sector outlook.",
+  "description": "n8n community node for the Stocklake API — US/international stock market data with quotes delayed about 15 minutes, technical indicators, AI-synthesized research, insider/institutional activity, earnings intelligence, and macro/sector outlook.",
   "keywords": [
     "n8n-community-node-package",
     "stocklake",
@@ -32,7 +32,7 @@
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
     "prepublishOnly": "npm run build && npm run lint && npm test"
   },
   "files": [

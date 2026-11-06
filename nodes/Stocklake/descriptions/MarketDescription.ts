@@ -1,6 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { withDocsLinks } from './shared';
 
-export const marketOperations: INodeProperties = {
+const marketOperationsBase: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
 	type: 'options',
@@ -29,6 +30,8 @@ export const marketOperations: INodeProperties = {
 		},
 	],
 };
+
+export const marketOperations = withDocsLinks('market', marketOperationsBase);
 
 export const marketFields: INodeProperties[] = [
 	{

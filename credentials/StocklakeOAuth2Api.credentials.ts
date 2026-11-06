@@ -27,7 +27,7 @@ export class StocklakeOAuth2Api implements ICredentialType {
 		dark: 'file:../nodes/Stocklake/stocklake.dark.svg',
 	} as const;
 
-	documentationUrl = 'https://api.stocklake.dev/llms.txt';
+	documentationUrl = 'https://stocklake.dev/docs#oauth';
 
 	properties: INodeProperties[] = [
 		{

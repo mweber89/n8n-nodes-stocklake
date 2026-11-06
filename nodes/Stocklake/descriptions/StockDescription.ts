@@ -1,7 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { symbolLocatorField } from './shared';
+import { symbolLocatorField, withDocsLinks } from './shared';
 
-export const stockOperations: INodeProperties = {
+const stockOperationsBase: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
 	type: 'options',
@@ -31,7 +31,8 @@ export const stockOperations: INodeProperties = {
 		{
 			name: 'Get Insider Activity',
 			value: 'getInsiderActivity',
-			description: 'AI-synthesized insider and institutional sentiment (requires Pro)',
+			description:
+				'Insider transactions for one stock (free). Pro adds the AI-synthesized read and institutional holdings.',
 			action: 'Get stock insider activity',
 		},
 		{
@@ -56,6 +57,8 @@ export const stockOperations: INodeProperties = {
 		},
 	],
 };
+
+export const stockOperations = withDocsLinks('stock', stockOperationsBase);
 
 export const stockFields: INodeProperties[] = [
 	symbolLocatorField('Symbol', 'symbol', 'stock', 'get'),

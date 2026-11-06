@@ -1,6 +1,6 @@
 # Example workflows
 
-Three ready-to-run workflows for the Stocklake node. Copy a file's contents and
+Three ready-to-run workflows for the Stocklake node (version 2). Copy a file's contents and
 paste it straight onto an empty n8n canvas (Ctrl+V) — no import dialog needed.
 
 Credentials are deliberately omitted from the JSON. n8n auto-selects a matching
@@ -16,9 +16,10 @@ and pick the one you want before executing.
 
 ## Notes
 
-**Tier.** `1` and `3` use free-tier operations except `Get Research`, which is
-Pro. `2` uses `Stock → Get`, which works on any tier — including with no
-credential at all (25 calls/day as a guest).
+**Tier.** `1` uses free operations only. `3` needs a Pro account for
+`Market → Get Assessment` and `Stock → Get Research`. `2` uses `Stock → Get`,
+which works on any tier, including with no credential at all (25 calls/day as
+a guest).
 
 **Chat model for `2`.** The agent needs a language model attached. The workflow
 ships pointing at an OpenAI-compatible endpoint; set the model name and base URL

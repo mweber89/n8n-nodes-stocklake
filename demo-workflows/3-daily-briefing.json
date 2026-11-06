@@ -16,7 +16,7 @@
       "id": "c3000000-0000-4000-8000-000000000002",
       "name": "Market Assessment",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [200, 300]
     },
     {
@@ -35,7 +35,7 @@
       "id": "c3000000-0000-4000-8000-000000000003",
       "name": "Oversold, >$2B",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [420, 300]
     },
     {
@@ -55,7 +55,7 @@
       "id": "c3000000-0000-4000-8000-000000000005",
       "name": "AI Research (Pro)",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [860, 300]
     }
   ],

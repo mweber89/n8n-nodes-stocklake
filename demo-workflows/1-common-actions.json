@@ -18,7 +18,7 @@
       "id": "a1000000-0000-4000-8000-000000000002",
       "name": "Get Stock — AAPL",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [220, 100]
     },
     {
@@ -32,7 +32,7 @@
       "id": "a1000000-0000-4000-8000-000000000003",
       "name": "Screener — Oversold",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [220, 300]
     },
     {
@@ -40,7 +40,7 @@
       "id": "a1000000-0000-4000-8000-000000000004",
       "name": "Market Pulse",
       "type": "n8n-nodes-stocklake.stocklake",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [220, 500]
     }
   ],

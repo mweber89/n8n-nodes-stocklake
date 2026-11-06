@@ -15,7 +15,7 @@ export class StocklakeApi implements ICredentialType {
 		dark: 'file:../nodes/Stocklake/stocklake.dark.svg',
 	} as const;
 
-	documentationUrl = 'https://api.stocklake.dev/llms.txt';
+	documentationUrl = 'https://stocklake.dev/docs#auth';
 
 	properties: INodeProperties[] = [
 		{
@@ -26,7 +26,7 @@ export class StocklakeApi implements ICredentialType {
 			default: '',
 			required: true,
 			description:
-				'Your Stocklake API key (starts with "sl_"). Get one for free at stocklake.dev/login — enter your email, click the magic link, and your key is on the account page. Free keys unlock the 8 market-data tools at 200 calls/day; upgrade to Pro on the same account page for the 9 AI research tools and 5000 calls/day.',
+				'Your Stocklake API key (starts with "sl_"). Get one for free at stocklake.dev/login — enter your email, click the magic link, and your key is on the account page. A free key lifts the daily limit to 200 calls; upgrade to Pro on the same account page for the AI research operations and 5000 calls/day.',
 		},
 	];
 

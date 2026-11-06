@@ -1,7 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { SECTOR_OPTIONS } from './shared';
+import { SECTOR_OPTIONS, withDocsLinks } from './shared';
 
-export const screenerOperations: INodeProperties = {
+const screenerOperationsBase: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
 	type: 'options',
@@ -18,6 +18,8 @@ export const screenerOperations: INodeProperties = {
 		},
 	],
 };
+
+export const screenerOperations = withDocsLinks('screener', screenerOperationsBase);
 
 export const screenerFields: INodeProperties[] = [
 	{

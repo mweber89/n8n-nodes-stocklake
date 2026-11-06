@@ -1,7 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { SECTOR_OPTIONS } from './shared';
+import { SECTOR_OPTIONS, withDocsLinks } from './shared';
 
-export const earningsOperations: INodeProperties = {
+const earningsOperationsBase: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
 	type: 'options',
@@ -23,6 +23,8 @@ export const earningsOperations: INodeProperties = {
 		},
 	],
 };
+
+export const earningsOperations = withDocsLinks('earnings', earningsOperationsBase);
 
 export const earningsFields: INodeProperties[] = [
 	{
