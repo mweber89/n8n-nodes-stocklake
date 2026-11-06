@@ -34,9 +34,17 @@ function liveHelpers(key) {
 		});
 		const text = await response.text();
 		if (!response.ok) {
-			const error = new Error(`HTTP ${response.status}`);
-			error.httpCode = String(response.status);
-			throw error;
+			// Shaped like the error n8n's HTTP helper throws, body included.
+			let data;
+			try {
+				data = JSON.parse(text);
+			} catch {
+				data = undefined;
+			}
+			throw Object.assign(new Error(`HTTP ${response.status}`), {
+				httpCode: String(response.status),
+				response: { status: response.status, data },
+			});
 		}
 		return JSON.parse(text.slice(text.indexOf('{')));
 	};

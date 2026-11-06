@@ -2,7 +2,7 @@
 
 An [n8n](https://n8n.io) community node for the [Stocklake](https://stocklake.dev) API — US and international stock market data, with quotes delayed about 15 minutes: fundamentals, technical indicators (RSI, MACD, Bollinger Bands, Williams %R, DeMark, Elliott Wave), AI-synthesized research, insider/institutional activity, earnings intelligence, and macro/sector outlook.
 
-Stocklake has a free tier and a no-key guest mode: the free operations work without signing up. The AI research, signals, sector and market intelligence, news feed and watchlist operations need a Pro account.
+Stocklake has a free tier and a no-key guest mode: the free operations work without signing up, but on n8n Cloud you should connect a free credential (see [Credentials](#credentials)). The AI research, signals, sector and market intelligence, news feed and watchlist operations need a Pro account.
 
 ## Installation
 
@@ -14,7 +14,9 @@ n8n-nodes-stocklake
 
 ## Credentials
 
-Credentials are **optional**. Without one, the node calls Stocklake as an unauthenticated guest (25 calls/day, free operations only). Once connected, either way below, it's 200 calls/day; a Pro account unlocks 5,000 calls/day plus the AI-research operations. Current limits are on [stocklake.dev/docs#rate-limits](https://stocklake.dev/docs#rate-limits). The node's **Authentication** dropdown picks between the two:
+**On n8n Cloud, connect a credential.** Without one, the node runs as a guest, and guest calls are limited to 25 a day per network address. n8n Cloud sends many customers' requests from shared addresses, so that allowance is shared with other n8n users and can already be used up when you start. A free Stocklake account (OAuth2: sign in with an email link, nothing to copy) gives you your own 200 calls a day. If the guest limit is hit, the node's error says so and what to do. On a self-hosted n8n the guest limit is yours alone.
+
+Credentials are otherwise **optional**. Without one, the node calls Stocklake as an unauthenticated guest (25 calls/day, free operations only). Once connected, either way below, it's 200 calls/day; a Pro account unlocks 5,000 calls/day plus the AI-research operations. Current limits are on [stocklake.dev/docs#rate-limits](https://stocklake.dev/docs#rate-limits). The node's **Authentication** dropdown picks between the two:
 
 **OAuth2 (recommended)** — add a **Stocklake OAuth2 API** credential and click Connect. No key to copy or paste: your browser opens, you sign in with a magic link (or you're already signed in), and n8n handles the rest — including token refresh. Under the hood this uses n8n's Dynamic Client Registration support against Stocklake's own OAuth server, the same mechanism Claude and ChatGPT connectors use.
 

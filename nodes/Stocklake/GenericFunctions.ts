@@ -8,6 +8,8 @@ import type {
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 export const STOCKLAKE_MCP_URL = 'https://api.stocklake.dev/mcp';
+/** Sent with every request. */
+export const USER_AGENT = 'n8n-nodes-stocklake';
 export const STOCKLAKE_SEARCH_URL = 'https://api.stocklake.dev/api/search';
 
 interface McpContent {
@@ -107,6 +109,98 @@ function tryParseJson(text: string): unknown {
 	}
 }
 
+/** What a failed HTTP call looked like: its status and, when there was one, its JSON body.
+ * n8n's HTTP helper reports the same failure under different keys depending on the
+ * version and the transport, so every place it is known to appear is checked. */
+interface HttpFailure {
+	status?: number;
+	body?: IDataObject;
+}
+
+function asRecord(value: unknown): IDataObject | undefined {
+	if (typeof value === 'string') {
+		const parsed = tryParseJson(value);
+		return typeof parsed === 'object' && parsed !== null ? (parsed as IDataObject) : undefined;
+	}
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+		? (value as IDataObject)
+		: undefined;
+}
+
+export function httpFailure(error: unknown): HttpFailure {
+	const e = (error ?? {}) as IDataObject;
+	const response = (e.response ??
+		(e.cause as IDataObject | undefined)?.response ??
+		{}) as IDataObject;
+	const statusRaw =
+		response.status ?? response.statusCode ?? e.httpCode ?? e.statusCode ?? e.status;
+	const status = statusRaw === undefined ? undefined : Number(statusRaw);
+	const body =
+		asRecord(response.data) ?? asRecord(response.body) ?? asRecord(e.error) ?? asRecord(e.body);
+	return { status: Number.isFinite(status) ? status : undefined, body };
+}
+
+const CREDENTIAL_HELP =
+	'Open the node, set Authentication, and add a Stocklake credential: OAuth2 (sign in with an email link, no key to copy) or an API key from https://stocklake.dev/login. A free account has its own 200 calls a day.';
+
+/**
+ * Turns the API's three different 401 answers, and its 429, into messages an n8n user can
+ * act on. n8n would otherwise show its generic "Authorization failed - please check your
+ * credentials" for all of them, which is wrong for two of the three: nothing is wrong
+ * with a credential the user never added.
+ *   - guest limit used up   (no credential; the 25 calls a day are shared by a network)
+ *   - Pro operation as guest (no credential)
+ *   - key rejected           (a credential that is invalid or switched off)
+ * Returns undefined for anything else, which keeps n8n's own message.
+ */
+export function describeAuthFailure(
+	failure: HttpFailure,
+	credentialAttached: boolean,
+): ApiErrorText | undefined {
+	const { status, body } = failure;
+	if (!body) return undefined;
+
+	if (status === 429) {
+		const text = typeof body.error === 'string' ? body.error : 'Stocklake rate limit reached';
+		return {
+			message: text,
+			description:
+				'Daily limits reset at 00:00 UTC. Wait a moment before retrying if this is a short burst.',
+		};
+	}
+	if (status !== 401) return undefined;
+
+	const error = body.error;
+	const reason =
+		typeof error === 'object' && error !== null
+			? ((error as IDataObject).data as IDataObject | undefined)?.reason
+			: undefined;
+
+	if (reason === 'guest_limit_reached') {
+		return {
+			message:
+				'The free guest limit is used up: 25 calls a day without a credential, shared by everyone calling from the same network address.',
+			description: `${CREDENTIAL_HELP} Guest calls reset at 00:00 UTC.`,
+		};
+	}
+	if (reason === 'pro_tool_unauthenticated') {
+		return {
+			message:
+				'This operation requires a Stocklake Pro account, and this node has no credential attached.',
+			description: `${CREDENTIAL_HELP} The account needs the Pro plan for this operation.`,
+		};
+	}
+	if (typeof error === 'string' && /invalid or inactive api key/i.test(error)) {
+		return {
+			message: 'Stocklake rejected the API key: it is invalid or switched off.',
+			description: credentialAttached
+				? 'Check the key in the Stocklake API credential, or create a new one at https://stocklake.dev/account. Using OAuth2 instead avoids keys altogether.'
+				: CREDENTIAL_HELP,
+		};
+	}
+	return undefined;
+}
+
 let requestCounter = 0;
 
 /**
@@ -133,6 +227,8 @@ export async function stocklakeApiRequest(
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json, text/event-stream',
+			// Says which client the traffic comes from, so usage from n8n can be told apart.
+			'User-Agent': USER_AGENT,
 		},
 		body: {
 			jsonrpc: '2.0',
@@ -147,6 +243,7 @@ export async function stocklakeApiRequest(
 	};
 
 	let response: McpJsonRpcResponse;
+	let credentialAttached = false;
 	try {
 		// "authentication" chooses OAuth2 vs. API-key. Under API-key, the
 		// credential is itself optional (Layer 1 tools work as an unauthenticated
@@ -155,6 +252,7 @@ export async function stocklakeApiRequest(
 		// node's own `credentials` array), so it's always attached.
 		const authentication = this.getNodeParameter('authentication', itemIndex, 'apiKey') as string;
 		if (authentication === 'oAuth2') {
+			credentialAttached = true;
 			response = (await this.helpers.httpRequestWithAuthentication.call(
 				this,
 				'stocklakeOAuth2Api',
@@ -162,6 +260,7 @@ export async function stocklakeApiRequest(
 			)) as McpJsonRpcResponse;
 		} else {
 			const hasApiKeyCredential = this.getNode().credentials?.stocklakeApi !== undefined;
+			credentialAttached = hasApiKeyCredential;
 			response = hasApiKeyCredential
 				? ((await this.helpers.httpRequestWithAuthentication.call(
 						this,
@@ -171,7 +270,17 @@ export async function stocklakeApiRequest(
 				: ((await this.helpers.httpRequest(options)) as McpJsonRpcResponse);
 		}
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error as JsonObject, { itemIndex });
+		const failure = httpFailure(error);
+		const friendly = describeAuthFailure(failure, credentialAttached);
+		const apiError = new NodeApiError(this.getNode(), error as JsonObject, {
+			itemIndex,
+			...(friendly ? { message: friendly.message } : {}),
+			...(failure.status !== undefined ? { httpCode: String(failure.status) } : {}),
+		});
+		// n8n replaces a description passed in the options with the API's own error text
+		// when the response has a body, so ours is set afterwards.
+		if (friendly) apiError.description = friendly.description;
+		throw apiError;
 	}
 
 	// Shape 1 (see describeApiError): a protocol-level JSON-RPC rejection.

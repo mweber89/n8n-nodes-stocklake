@@ -17,7 +17,7 @@ import { watchlistFields, watchlistOperations } from './WatchlistDescription';
 
 const credentialNotice: INodeProperties = {
 	displayName:
-		'Sign in with OAuth (no key to copy/paste, recommended), or use an API key. Either way, a key or sign-in is optional for the free operations (25 calls/day without one, 200/day once connected). The AI research, signals, sector/market intelligence, news feed and watchlist operations require a Pro account. Quotes are delayed about 15 minutes.',
+		'Connect a free Stocklake credential: OAuth sign-in (an email link, no key to copy, recommended) or an API key. Without one the node runs as a guest, with 25 calls a day shared by everyone calling from the same network address, which on n8n Cloud includes other n8n users, so it can run out at any time. With a credential you get your own 200 calls a day. The AI research, signals, sector/market intelligence, news feed and watchlist operations require a Pro account. Quotes are delayed about 15 minutes.',
 	name: 'credentialNotice',
 	type: 'notice',
 	default: '',
