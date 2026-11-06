@@ -2,6 +2,7 @@ import type { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 
 import { LIST_SPECS, listOperations } from '../rows';
 import { properties } from './NodeDescription';
+import { withLoadedOptions } from './LoadedOptions';
 import { symbolLocatorField, withDocsLinks } from './shared';
 
 /**
@@ -323,7 +324,7 @@ function outputFields(): INodeProperties[] {
 
 /** Version 1's properties plus the five new operations, one item per row, Simplify,
  * Return All / Limit and the metadata option. */
-export const v2Properties: INodeProperties[] = [
+export const v2Properties: INodeProperties[] = withLoadedOptions([
 	...withReturnAll([
 		...properties.map((property) => {
 			if (property.name !== 'operation') return property;
@@ -335,4 +336,4 @@ export const v2Properties: INodeProperties[] = [
 		...newFields,
 	]),
 	...outputFields(),
-];
+]);

@@ -71,6 +71,15 @@ test('version 2 adds exactly the five new operations; version 1 does not have th
 	assert.equal(operationValues(2, 'market').length, operationValues(1, 'market').length + 1);
 });
 
+const LOADED_IN_V2 = new Set([
+	'preset',
+	'sector',
+	'direction',
+	'source',
+	'types',
+	'additionalFields',
+]);
+
 test('version 2 keeps every version 1 parameter unchanged', () => {
 	const v1 = new Stocklake().nodeVersions[1].description;
 	const v2 = new Stocklake().nodeVersions[2].description;
@@ -86,6 +95,10 @@ test('version 2 keeps every version 1 parameter unchanged', () => {
 		const same = sigV2.get(key(p));
 		assert.ok(same, `v2 lost ${p.name}`);
 		if (p.name === 'operation') continue;
+		// Filled from Stocklake in version 2 (test/loadOptions.test.js checks those, and that
+		// the fallback lists still hold everything version 1 offered) and the symbol pickers,
+		// whose list mode also offers the watchlist.
+		if (LOADED_IN_V2.has(p.name) || p.type === 'resourceLocator') continue;
 		const { displayOptions: _v2Display, ...restV2 } = same;
 		const { displayOptions: _v1Display, ...restV1 } = p;
 		assert.deepEqual(restV2, restV1, p.name);
@@ -120,15 +133,10 @@ test("the new parameters are dropdowns and multi-selects with the tool's exact v
 		'cash_flow',
 		'income_stmt',
 	]);
+	// The activity types are loaded from Stocklake (test/loadOptions.test.js covers the
+	// loaded and the fallback list).
 	assert.equal(find('types', 'getActivity').type, 'multiOptions');
-	assert.deepEqual(values(find('types', 'getActivity')), [
-		'analyst',
-		'earnings',
-		'filing',
-		'insider',
-		'news',
-		'setup',
-	]);
+	assert.equal(find('types', 'getActivity').typeOptions.loadOptionsMethod, 'getActivityTypes');
 	for (const operation of ['getFinancials', 'getFilings', 'getActivity', 'getAnalystTrend']) {
 		assert.equal(find('symbol', operation).type, 'resourceLocator', operation);
 		assert.equal(find('symbol', operation).modes[0].typeOptions.searchListMethod, 'searchSymbols');

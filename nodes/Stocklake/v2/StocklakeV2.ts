@@ -6,7 +6,15 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 
-import { searchSymbols } from '../GenericFunctions';
+import {
+	getActivityTypes,
+	getScreenerPresets,
+	getSectors,
+	getSectorsForRotation,
+	getSignalDirections,
+	getSignalSources,
+	searchSymbolsWithWatchlist,
+} from '../loadOptions';
 import { v2Properties } from '../descriptions/V2Additions';
 import { versionDescription } from '../descriptions/NodeDescription';
 import { executeRows } from '../executeRows';
@@ -21,7 +29,17 @@ export class StocklakeV2 implements INodeType {
 		this.description = versionDescription(baseDescription, 2, v2Properties);
 	}
 
-	methods = { listSearch: { searchSymbols } };
+	methods = {
+		listSearch: { searchSymbols: searchSymbolsWithWatchlist },
+		loadOptions: {
+			getActivityTypes,
+			getScreenerPresets,
+			getSectors,
+			getSectorsForRotation,
+			getSignalDirections,
+			getSignalSources,
+		},
+	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		return await executeRows.call(this);

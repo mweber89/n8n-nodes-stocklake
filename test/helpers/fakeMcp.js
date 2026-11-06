@@ -19,10 +19,23 @@
  *   A response of the form `{ __rpcError: {...} }`, `{ __toolError: text }` or
  *   `{ __httpError: {...} }` makes the fake fail the way the real server does.
  */
-function createFakeMcp(tools = {}) {
+function createFakeMcp(tools = {}, { dailyLimit = 200, search = () => [] } = {}) {
 	const calls = [];
+	const searches = [];
 
 	async function handle(options, credentialName) {
+		if (options.method === 'GET' && String(options.url).endsWith('/api/search')) {
+			searches.push(options.qs?.q);
+			return { results: search(options.qs?.q) };
+		}
+		const result = await handleToolCall(options, credentialName);
+		// Like n8n with returnFullResponse: the body plus the response headers, as sent by the API.
+		return options.returnFullResponse
+			? { statusCode: 200, headers: { 'x-ratelimit-limit': String(dailyLimit) }, body: result }
+			: result;
+	}
+
+	async function handleToolCall(options, credentialName) {
 		const body = options.body;
 		if (!body || body.method !== 'tools/call') {
 			throw new Error(`Fake MCP only understands tools/call, got ${JSON.stringify(body)}`);
@@ -70,6 +83,7 @@ function createFakeMcp(tools = {}) {
 
 	return {
 		calls,
+		searches,
 		httpRequest: (options) => handle(options, null),
 		httpRequestWithAuthentication(credentialName, options) {
 			return handle(options, credentialName);
@@ -172,4 +186,33 @@ async function runNode(node, opts) {
 	return output;
 }
 
-module.exports = { createFakeMcp, loadNode, resolveParameters, runNode };
+/**
+ * Runs a loadOptions / listSearch function the way the n8n editor does.
+ *
+ * @param {Function} method  the node's loader (called with an ILoadOptionsFunctions `this`)
+ * @param {object} opts
+ * @param {object} opts.fake  from createFakeMcp
+ * @param {'apiKey'|'oAuth2'|'guest'} [opts.auth]  guest = apiKey authentication, no credential
+ * @param {string} [opts.credentialId]
+ * @param {string} [opts.filter]  search text for listSearch methods
+ */
+async function runLoader(method, { fake, auth = 'apiKey', credentialId = 'cred-1', filter } = {}) {
+	const credentials =
+		auth === 'oAuth2'
+			? { stocklakeOAuth2Api: { id: credentialId, name: 'Stocklake OAuth2' } }
+			: auth === 'apiKey'
+				? { stocklakeApi: { id: credentialId, name: 'Stocklake API' } }
+				: undefined;
+	const context = {
+		getNodeParameter: (name, fallback) =>
+			name === 'authentication' ? (auth === 'oAuth2' ? 'oAuth2' : 'apiKey') : fallback,
+		getNode: () => ({ name: 'Stocklake', type: 'n8n-nodes-stocklake.stocklake', credentials }),
+		helpers: {
+			httpRequest: fake.httpRequest,
+			httpRequestWithAuthentication: fake.httpRequestWithAuthentication,
+		},
+	};
+	return await method.call(context, filter);
+}
+
+module.exports = { createFakeMcp, loadNode, resolveParameters, runNode, runLoader };

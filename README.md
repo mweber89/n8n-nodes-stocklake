@@ -71,6 +71,16 @@ Every other operation (Stock: Get, Get Research, Get Financials, Get Insider Act
 
 Version 1 keeps returning the whole response as one item; its output has not changed.
 
+## Dropdowns that come from Stocklake (version 2)
+
+Some fields that were typed or fixed lists in version 1 are filled from Stocklake when you open them, so they follow the API instead of drifting from it: **Sector** (Screener, Earnings, Sector), **Preset** (Screener; High Conviction is marked "(Pro)"), **Source** and **Direction** (Signal), **Types** (Stock → Get Activity), and the symbol picker, whose list also shows **your watchlist** (marked ★) when you open it with nothing typed.
+
+- Loading these does not use up your daily calls. The values are read from the error the API gives for a value it does not accept, and a rejected call is not counted. Each list is remembered for 30 minutes per credential, so opening the editor again does not call the API again.
+- A Pro-only call is never made for a credential that is not Pro. Signal Source and Direction, and the watchlist, are only loaded for a Pro credential; otherwise you see the lists that ship with the node (and, in the symbol picker, the search you had before).
+- If a load fails (no network, a used-up daily limit, a guest whose calls are gone), the editor shows the lists that ship with the node. Nothing breaks, and the next open tries again after a minute.
+- **Country** (Screener, under Additional Fields) is a fixed list of the countries that have stocks in the universe; the API has no list of them to load. For a country that is not in the list, use an expression with the full English name.
+- Signal **Source** no longer offers "Social": the API has no such source and answers it with an error. Version 1 still lists it.
+
 ## Example workflow
 
 A daily oversold-stock digest: a Schedule Trigger fires two Stocklake nodes in parallel (Market → Get Pulse, Screener → Screen Stocks with the `oversold` preset), a Code node formats the two results into one digest string, and a final node is left ready for you to wire into Slack, Send Email, Google Sheets, or whatever you already use for notifications.

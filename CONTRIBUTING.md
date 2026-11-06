@@ -68,6 +68,17 @@ n8n does.
 delayed about 15 minutes) and on any data-provider or model name in files that
 ship.
 
+## Dropdowns loaded from Stocklake
+
+`nodes/Stocklake/loadOptions.ts` holds the `methods.loadOptions` functions and the
+symbol search with the watchlist (version 2 only); `descriptions/LoadedOptions.ts`
+turns the matching version-2 fields into loaded ones, and `optionLists.ts` has the
+fallback lists. Rules the tests (`test/loadOptions.test.js`) pin down: never a Pro
+tool for a credential that is not Pro, one request per credential and list within
+the cache lifetime, and the fallback list on any failure. When the API gains a
+sector, preset or type, nothing here needs to change; to make the fallback current,
+update `FALLBACK_VALUES`.
+
 ## Checking against the real API
 
 `scripts/check-api.js` runs the version-2 operations through the node's real
@@ -78,6 +89,9 @@ you pass them:
 npm run build
 STOCKLAKE_FREE_KEY=... STOCKLAKE_PRO_KEY=... node scripts/check-api.js
 ```
+
+`scripts/check-options.js` does the same for the dropdown loaders and prints what
+each returned and how many requests it made.
 
 Keys come from the environment only and are never printed or stored. It spends
 the keys' daily quota, so it is not part of `npm test`. A Pro-only operation
@@ -101,7 +115,17 @@ shows for custom nodes (`CUSTOM.stocklake`). Re-run the script after a change; i
 rebuilds and refreshes the copy, then you restart n8n.
 
 Delete `./.n8n-dev` to start clean. n8n is downloaded by `npx` on first run, so
-that needs network access and some disk space.
+that needs network access and some disk space. Current n8n releases need Node 24 or
+newer; with an older Node, install a newer one first (for example
+`npm install node@24` in a scratch folder and put its `bin` first on `PATH`).
+The script sets `N8N_CUSTOM_EXTENSIONS`, which this n8n version needs to load the
+folder, and copies with `cp` so it works without `rsync`.
+
+To check the dropdowns: in the editor, add a Stocklake node, pick Screener and open
+Preset and Sector, Signal and open Source and Direction, Stock → Get Activity and open
+Types, and Stock → Get and click the symbol field. With a Pro credential the symbol
+list shows the watchlist; with a guest or a used-up limit the dropdowns still fill from
+the lists that ship with the node.
 
 ## Before and after publishing
 
