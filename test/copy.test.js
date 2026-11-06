@@ -23,10 +23,14 @@ function walk(dir, out = []) {
 /** Everything a user, a reviewer or the n8n scanner can read. */
 const publicFiles = [
 	'README.md',
+	'CHANGELOG.md',
 	'CONTRIBUTING.md',
 	'package.json',
+	'docs/resubmission.md',
+	'templates/README.md',
 	...walk(path.join(root, 'demo-workflows')).map((f) => path.relative(root, f)),
 	...walk(path.join(root, 'examples')).map((f) => path.relative(root, f)),
+	...walk(path.join(root, 'templates')).map((f) => path.relative(root, f)),
 	...walk(path.join(root, 'nodes')).map((f) => path.relative(root, f)),
 	...walk(path.join(root, 'credentials')).map((f) => path.relative(root, f)),
 ].filter((f) => /\.(md|json|ts)$/.test(f));

@@ -1,0 +1,70 @@
+{
+  "name": "Get an email when your stocks report earnings with Stocklake",
+  "nodes": [
+    {
+      "id": "5e0c0002-0001-4000-8000-0000000000c9",
+      "name": "Earnings Coming Up",
+      "type": "n8n-nodes-stocklake.stocklakeTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "event": "earnings",
+        "symbolSource": "manual",
+        "symbols": "AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA",
+        "daysAhead": 7,
+        "minutesBetweenChecks": 360
+      }
+    },
+    {
+      "id": "5e0c0002-0002-4000-8000-0000000000ca",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "sendTo": "you@example.com",
+        "subject": "={{ $json.symbol }} reports earnings in {{ $json.days_until }} days",
+        "message": "={{ $json.name }} ({{ $json.symbol }}) reports on {{ $json.earnings_date.slice(0, 10) }}, in {{ $json.days_until }} days{{ $json.is_estimate ? ' (the date is an estimate)' : '' }}.\n\nPrice {{ $json.price }}, RSI {{ $json.rsi }}, forward EPS estimate {{ $json.eps_forward }}.\n\nSent by n8n with the Stocklake Trigger.",
+        "options": {}
+      }
+    },
+    {
+      "id": "5e0c0002-0003-4000-8000-0000000000cb",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -420
+      ],
+      "parameters": {
+        "content": "## Earnings week alert\nThe **Earnings Coming Up** trigger fires once for every company in your list that reports within the next 7 days, and again if the report date moves. Nothing is sent twice.\n\n**Set up**\n1. Connect a Stocklake credential on the trigger (a free account is enough).\n2. Put your tickers in **Symbols** (up to 100). Pro users can use *My Watchlist*.\n3. Connect Gmail and set the address in **Send Email Alert**. Any other notification node works the same way: each item has `symbol`, `name`, `earnings_date`, `days_until`, `price`, `rsi` and the EPS figures.\n4. Click **Fetch Test Event** to see a real item, then activate the workflow.\n\nThe first check after activation only records what is already coming up, so you are not flooded. Turn on *Options > Fire on Existing Items* if you want those sent. The trigger checks every 6 hours; **Estimated Calls per Day** shows what that costs.",
+        "width": 600,
+        "height": 360
+      }
+    }
+  ],
+  "connections": {
+    "Earnings Coming Up": {
+      "main": [
+        [
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

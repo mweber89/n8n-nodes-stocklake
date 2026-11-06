@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-stocklake",
-  "version": "0.1.1",
-  "description": "n8n community node for the Stocklake API — US/international stock market data with quotes delayed about 15 minutes, technical indicators, AI-synthesized research, insider/institutional activity, earnings intelligence, and macro/sector outlook.",
+  "version": "2.0.0",
+  "description": "n8n community nodes for Stocklake: stock market data with quotes delayed about 15 minutes, technical indicators, fundamentals, insider activity, SEC filings, earnings, AI-synthesized research, macro and sector outlook, and a trigger that starts a workflow on signals, earnings, filings, insider purchases, RSI crossings and price moves.",
   "keywords": [
     "n8n-community-node-package",
     "stocklake",
@@ -37,7 +37,8 @@
     "prepublishOnly": "npm run build && npm run lint && npm test"
   },
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,

@@ -1,0 +1,182 @@
+{
+  "name": "Check your stock holdings and log them in Google Sheets with Stocklake",
+  "nodes": [
+    {
+      "id": "5e0c0004-0001-4000-8000-000000000191",
+      "name": "Every Weekday Evening",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 21 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5e0c0004-0002-4000-8000-000000000192",
+      "name": "Read Holdings",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Holdings",
+          "mode": "name"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5e0c0004-0003-4000-8000-000000000193",
+      "name": "Check Holdings",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "resource": "portfolio",
+        "operation": "checkHoldings",
+        "holdingSymbol": "={{ $json.symbol }}",
+        "holdingQuantity": "={{ $json.quantity }}",
+        "holdingCost": "={{ $json.cost }}",
+        "holdingOptions": {
+          "output": "holdings",
+          "earningsWithinDays": 7,
+          "overboughtAbove": 70,
+          "oversoldBelow": 30
+        }
+      }
+    },
+    {
+      "id": "5e0c0004-0004-4000-8000-000000000194",
+      "name": "Shape Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// One clean row per holding, ready for a spreadsheet. Every row has the same columns.\nconst today = new Date().toISOString().slice(0, 10);\nreturn $input.all().map((item) => {\n  const h = item.json;\n  return { json: {\n    date: today,\n    symbol: h.symbol,\n    quantity: h.quantity ?? '',\n    price: h.price ?? '',\n    value: h.value ?? '',\n    day_change_pct: h.day_change_pct ?? '',\n    cost: h.cost ?? '',\n    profit_loss: h.pl ?? '',\n    profit_loss_pct: h.pl_pct ?? '',\n    weight_pct: h.weight_pct ?? '',\n    rsi: h.rsi ?? '',\n    flags: (h.flags || []).join(', '),\n    note: h.error || '',\n  } };\n});"
+      }
+    },
+    {
+      "id": "5e0c0004-0005-4000-8000-000000000195",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "History",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5e0c0004-0006-4000-8000-000000000196",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -480
+      ],
+      "parameters": {
+        "content": "## Check your holdings and log them in Google Sheets\nEach weekday evening the workflow reads your holdings from a sheet, values them with Stocklake and appends one row per holding to a History sheet.\n\n**Set up**\n1. Make a spreadsheet with a sheet named **Holdings** (columns `symbol`, `quantity`, `cost`; cost is the price per share and may be empty) and an empty sheet named **History**.\n2. Connect Google Sheets and pick the spreadsheet in both Sheets nodes.\n3. Connect a Stocklake credential on **Check Holdings** (a free account is enough).\n\nEach row has value, day change, profit or loss, weight, RSI and `flags` (`rsi_overbought`, `rsi_oversold`, `earnings_soon`, and on Pro `large_insider_sale`). `weight_pct` is empty when the holdings are in more than one currency. A ticker Stocklake does not know becomes a row with a `note` and the others are still valued. Each holding is one call (Pro adds one more per holding for the insider check; turn it off under *Options*). Add an IF node before the last step to log only flagged holdings. Quotes are delayed about 15 minutes.",
+        "width": 640,
+        "height": 420
+      }
+    }
+  ],
+  "connections": {
+    "Every Weekday Evening": {
+      "main": [
+        [
+          {
+            "node": "Read Holdings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Holdings": {
+      "main": [
+        [
+          {
+            "node": "Check Holdings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Holdings": {
+      "main": [
+        [
+          {
+            "node": "Shape Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape Rows": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

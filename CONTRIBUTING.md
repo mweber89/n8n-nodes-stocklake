@@ -166,6 +166,23 @@ Types, and Stock → Get and click the symbol field. With a Pro credential the s
 list shows the watchlist; with a guest or a used-up limit the dropdowns still fill from
 the lists that ship with the node.
 
+## Templates, screenshots and release notes
+
+- `templates/` holds the workflows written for n8n's template library, `examples/` the
+  smaller ones. `test/templates.test.js` checks every template: a valid graph, no saved
+  credentials, a set-up note, real operations, events and parameter names, and that each
+  one is listed in the READMEs. When you add or change an operation or a parameter, run
+  it: a template that names something that no longer exists fails there.
+- Run a template for real before you ship it: import it into the local n8n, connect a
+  credential, and replace the notification nodes (Slack, Gmail, Sheets) with a Set node
+  that holds the same expressions, so the message you would send is visible.
+- `assets/screenshots/` holds the images the README shows (taken from a local n8n; use a
+  credential called "Stocklake account" and tickers, never your own watchlist). The README
+  links them by their raw GitHub address, so they show on the npm page too.
+- A release changes `package.json` and `package-lock.json` (`npm version X.Y.Z
+  --no-git-tag-version`), `CHANGELOG.md`, and for a verified-node submission
+  `docs/resubmission.md`.
+
 ## Before and after publishing
 
 Before a release, `npm run build && npm run lint && npm test` must be green (this is

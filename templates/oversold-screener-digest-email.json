@@ -1,0 +1,182 @@
+{
+  "name": "Send a daily oversold and overbought stock digest by email with Stocklake",
+  "nodes": [
+    {
+      "id": "5e0c0003-0001-4000-8000-00000000012d",
+      "name": "Every Weekday Evening",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 21 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5e0c0003-0002-4000-8000-00000000012e",
+      "name": "Oversold Stocks",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -100
+      ],
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "oversold",
+        "limit": 10
+      }
+    },
+    {
+      "id": "5e0c0003-0003-4000-8000-00000000012f",
+      "name": "Overbought Stocks",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        240,
+        100
+      ],
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "overbought",
+        "limit": 10
+      }
+    },
+    {
+      "id": "5e0c0003-0004-4000-8000-000000000130",
+      "name": "Wait for Both",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5e0c0003-0005-4000-8000-000000000131",
+      "name": "Write Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Oversold on top, overbought below.\nconst row = (s) => `${(s.symbol ?? '?').padEnd(10)} RSI ${String(s.rsi ?? 'n/a').padEnd(6)} ${String(s.price ?? 'n/a').padEnd(9)} ${s.name ?? ''}`;\nconst oversold = $('Oversold Stocks').all().map(i => i.json);\nconst overbought = $('Overbought Stocks').all().map(i => i.json);\n\nconst lines = [\n  `Stocklake screener digest, ${new Date().toDateString()}`,\n  '',\n  `Oversold (${oversold.length}), RSI low:`,\n  ...(oversold.length ? oversold.map(row) : ['  none']),\n  '',\n  `Overbought (${overbought.length}), RSI high:`,\n  ...(overbought.length ? overbought.map(row) : ['  none']),\n];\nreturn [{ json: { subject: `Screener digest: ${oversold.length} oversold, ${overbought.length} overbought`, body: lines.join('\\n') } }];"
+      }
+    },
+    {
+      "id": "5e0c0003-0006-4000-8000-000000000132",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        900,
+        0
+      ],
+      "parameters": {
+        "fromEmail": "you@example.com",
+        "toEmail": "you@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.body }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "5e0c0003-0007-4000-8000-000000000133",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -540
+      ],
+      "parameters": {
+        "content": "## Oversold and overbought digest by email\nEvery weekday evening the Stocklake screener lists the stocks with the lowest and the highest RSI, and one email is sent.\n\n**Set up**\n1. Connect a Stocklake credential on both screener nodes (a free account is enough).\n2. Connect your SMTP account in **Send Email** and set the addresses. To use Slack, Telegram or Google Sheets instead, replace that node: the digest is in `subject` and `body`.\n3. Narrow the screens in the screener nodes: sector, minimum market cap, analyst rating and more are under *Additional Fields*.\n\nThe screener counts one call per row returned, so the two screens cost up to 20 calls a run. Quotes are delayed about 15 minutes.",
+        "width": 600,
+        "height": 300
+      }
+    }
+  ],
+  "connections": {
+    "Every Weekday Evening": {
+      "main": [
+        [
+          {
+            "node": "Oversold Stocks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Overbought Stocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Oversold Stocks": {
+      "main": [
+        [
+          {
+            "node": "Wait for Both",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overbought Stocks": {
+      "main": [
+        [
+          {
+            "node": "Wait for Both",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Wait for Both": {
+      "main": [
+        [
+          {
+            "node": "Write Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "name": "Send a daily stock briefing to Slack with Stocklake",
+  "nodes": [
+    {
+      "id": "5e0c0001-0001-4000-8000-000000000065",
+      "name": "Every Weekday Morning",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5e0c0001-0002-4000-8000-000000000066",
+      "name": "Market Pulse",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "resource": "market",
+        "operation": "getPulse"
+      }
+    },
+    {
+      "id": "5e0c0001-0003-4000-8000-000000000067",
+      "name": "My Stocks",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getMany",
+        "symbolSource": "manual",
+        "symbols": "AAPL, MSFT, NVDA, GOOGL, AMZN"
+      }
+    },
+    {
+      "id": "5e0c0001-0004-4000-8000-000000000068",
+      "name": "Write Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// One message: the market in a line, then each of your stocks.\nconst pulse = $('Market Pulse').first().json;\nconst stocks = $('My Stocks').all().map(i => i.json);\n\nconst fg = pulse.fear_greed || {};\nconst spy = (pulse.indices || {}).spy || {};\nconst pct = (n) => (n === null || n === undefined) ? 'n/a' : `${n > 0 ? '+' : ''}${n}%`;\n\nconst lines = [\n  `*Stocklake briefing, ${new Date().toDateString()}*`,\n  `S&P 500 (SPY) ${pct(spy.change_pct)} | VIX ${pulse.vix ?? 'n/a'} | Fear & Greed ${fg.value ?? 'n/a'} (${fg.description ?? 'n/a'})`,\n  '',\n];\nfor (const s of stocks) {\n  if (s.error) { lines.push(`${s.symbol}: ${s.error}`); continue; }\n  const note = s.rsi >= 70 ? ' (overbought)' : s.rsi <= 30 ? ' (oversold)' : '';\n  lines.push(`*${s.symbol}* ${s.price} ${pct(s.change_pct)} | RSI ${s.rsi ?? 'n/a'}${note} | analysts: ${(s.analyst_rating || 'n/a').replace('_', ' ')}`);\n}\nreturn [{ json: { text: lines.join('\\n') } }];"
+      }
+    },
+    {
+      "id": "5e0c0001-0005-4000-8000-000000000069",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "name"
+        },
+        "text": "={{ $json.text }}",
+        "otherOptions": {}
+      }
+    },
+    {
+      "id": "5e0c0001-0006-4000-8000-00000000006a",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -420
+      ],
+      "parameters": {
+        "content": "## Daily stock briefing in Slack\nEvery weekday at 08:00 this reads the market (VIX, Fear & Greed, S&P 500) and your stocks, and posts one message.\n\n**Set up**\n1. Connect a Stocklake credential on both Stocklake nodes. It is free: a free account gives you 200 calls a day. Without one the node runs as a guest with 25 calls a day shared with other n8n users.\n2. Edit the tickers in **My Stocks**. Pro users can set **Symbol Source** to *From My Watchlist* to brief the stocks starred on stocklake.dev.\n3. Connect Slack and pick the channel in **Post to Slack**.\n\nQuotes are delayed about 15 minutes. Uses free operations only; each ticker is one call.",
+        "width": 580,
+        "height": 340
+      }
+    }
+  ],
+  "connections": {
+    "Every Weekday Morning": {
+      "main": [
+        [
+          {
+            "node": "Market Pulse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Pulse": {
+      "main": [
+        [
+          {
+            "node": "My Stocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "My Stocks": {
+      "main": [
+        [
+          {
+            "node": "Write Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Briefing": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

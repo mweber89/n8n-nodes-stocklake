@@ -1,0 +1,153 @@
+{
+  "name": "Answer stock market questions with an AI agent and Stocklake",
+  "nodes": [
+    {
+      "id": "5e0c0005-0001-4000-8000-0000000001f5",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "webhookId": "5e0c0005-0001-0000-0000-000000000001"
+    },
+    {
+      "id": "5e0c0005-0002-4000-8000-0000000001f6",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a market research assistant with access to Stocklake stock market data (quotes are delayed about 15 minutes).\n\nAlways call the Stocklake tool to get real numbers before answering. Never answer a price, indicator or ranking from memory. Quote the figures you get back and say what they imply. Keep answers to a few sentences. This is information, not financial advice."
+        }
+      }
+    },
+    {
+      "id": "5e0c0005-0003-4000-8000-0000000001f7",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        240
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5e0c0005-0004-4000-8000-0000000001f8",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        260,
+        240
+      ],
+      "parameters": {
+        "contextWindowLength": 8
+      }
+    },
+    {
+      "id": "5e0c0005-0005-4000-8000-0000000001f9",
+      "name": "Stocklake",
+      "type": "n8n-nodes-stocklake.stocklakeTool",
+      "typeVersion": 2,
+      "position": [
+        420,
+        240
+      ],
+      "parameters": {
+        "resource": "toolkit",
+        "operation": "choose",
+        "toolkitOperations": [
+          "stock.get",
+          "stock.compare",
+          "stock.getHistory",
+          "screener.screen",
+          "market.getPulse",
+          "market.getMovers",
+          "earnings.getCalendar"
+        ]
+      }
+    },
+    {
+      "id": "5e0c0005-0006-4000-8000-0000000001fa",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -520
+      ],
+      "parameters": {
+        "content": "## AI agent that answers with Stocklake data\nAsk questions in the chat and the agent looks the numbers up instead of guessing.\n\nThe **Stocklake** tool is set to *Toolkit*: one tool that offers several operations, and the agent picks one from the question. **Operations the Agent May Use** is the filter. This agent sees seven read-only market data operations and cannot run any other, so a short prompt and a better choice.\n\n**Set up**\n1. Connect a chat model that supports tool calling (the OpenAI model here is an example; swap it for any chat model).\n2. Connect a Stocklake credential on the **Stocklake** tool (a free account is enough; guests share 25 calls a day).\n3. Open the chat and try: *Which of AAPL, MSFT and GOOGL is cheapest on forward P/E?*, *Show me oversold technology stocks.* or *Who reports earnings this week?*\n\nTo give an agent a single operation instead, set Resource and Operation on the tool as usual: ticker, days and limit are filled in by the agent. Pro operations (research, signals, sector view) can be added to the filter and fail with a clear message on a free key.",
+        "width": 640,
+        "height": 400
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stocklake": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
