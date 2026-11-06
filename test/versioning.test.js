@@ -84,10 +84,12 @@ test('version 2 keeps every version 1 parameter unchanged', () => {
 	const v1 = new Stocklake().nodeVersions[1].description;
 	const v2 = new Stocklake().nodeVersions[2].description;
 	// Version 2 shows Limit and Page only while Return All is off; that is the one
-	// change to a version 1 property's visibility.
+	// change to a version 1 property's visibility, apart from the Symbols field, which
+	// is shown only while Symbol Source is a manual list.
 	const key = (p) => {
 		const show = { ...p.displayOptions?.show };
 		delete show.returnAll;
+		delete show.symbolSource;
 		return JSON.stringify([p.name, { ...p.displayOptions, show }]);
 	};
 	const sigV2 = new Map(descriptionSignature(v2).properties.map((p) => [key(p), p]));

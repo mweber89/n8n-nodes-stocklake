@@ -68,6 +68,16 @@ n8n does.
 delayed about 15 minutes) and on any data-provider or model name in files that
 ship.
 
+## Symbol Source
+
+Get Many and Earnings Calendar (version 2) take their tickers from a manual list,
+from the input items or from the watchlist. `symbols.ts` holds the pure rules
+(cleaning, duplicates, invalid values, order, cost estimate); `executeRows.ts` plans the
+source, makes the batches and pairs rows with input items; `descriptions/SymbolSource.ts`
+has the fields. `test/symbolSource.test.js` covers them, and
+`STOCKLAKE_PRO_KEY=... node scripts/check-symbols.js` runs 60 tickers through the real
+node against the real API (it uses 60 calls of the key's daily limit).
+
 ## Dropdowns loaded from Stocklake
 
 `nodes/Stocklake/loadOptions.ts` holds the `methods.loadOptions` functions and the

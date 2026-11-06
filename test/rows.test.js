@@ -476,12 +476,19 @@ test('Get Many with more than 25 symbols is sent in batches of 25', async () => 
 		[25, 25, 10],
 	);
 	assert.equal(output[0].length, 59);
-	assert.deepEqual(output[0][0].json._meta, {
-		count: 59,
-		requested: 60,
-		missing: ['S59'],
-		duplicates_collapsed: 0,
-	});
+	const { count, requested, missing, duplicates_collapsed, estimated_calls, requests } =
+		output[0][0].json._meta;
+	assert.deepEqual(
+		{ count, requested, missing, duplicates_collapsed, estimated_calls, requests },
+		{
+			count: 59,
+			requested: 60,
+			missing: ['S59'],
+			duplicates_collapsed: 0,
+			estimated_calls: 60,
+			requests: 3,
+		},
+	);
 });
 
 test('chunk splits lists and keeps order', () => {

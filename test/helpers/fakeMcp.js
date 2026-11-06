@@ -148,10 +148,12 @@ function loadNode(NodeClass, version) {
  * @param {object[]} [opts.items]
  * @param {boolean} [opts.continueOnFail]
  * @param {boolean} [opts.apiKeyCredential]  whether an API-key credential is attached
+ * @param {object[]} [opts.hints]  filled with the execution hints the node adds
  */
 async function runNode(node, opts) {
 	const { fake, typeVersion, continueOnFail = false, apiKeyCredential = false } = opts;
-	const items = opts.items ?? [{ json: {} }];
+	const items = opts.items ?? (Array.isArray(opts.params) ? opts.params.map(() => ({ json: {} })) : [{ json: {} }]);
+	const hints = opts.hints ?? [];
 	const perItem = Array.isArray(opts.params) ? opts.params : items.map(() => opts.params);
 	const resolved = perItem.map((p) => resolveParameters(node.description, p, typeVersion));
 
@@ -173,6 +175,7 @@ async function runNode(node, opts) {
 			credentials: apiKeyCredential ? { stocklakeApi: { id: '1', name: 'Stocklake API' } } : undefined,
 		}),
 		continueOnFail: () => continueOnFail,
+		addExecutionHints: (...added) => hints.push(...added),
 		helpers: {
 			httpRequest: fake.httpRequest,
 			httpRequestWithAuthentication: fake.httpRequestWithAuthentication,

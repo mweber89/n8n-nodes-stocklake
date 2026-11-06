@@ -71,6 +71,19 @@ Every other operation (Stock: Get, Get Research, Get Financials, Get Insider Act
 
 Version 1 keeps returning the whole response as one item; its output has not changed.
 
+## Symbols from earlier steps (version 2)
+
+Get Many and the Earnings Calendar have a **Symbol Source**:
+
+- **Manual List** (Get Many's default): tickers typed in the Symbols field, separated by commas.
+- **From Input Items**: set **Symbol** to an expression such as `{{ $json.ticker }}`. The node reads it for every input item, works on all of them together in one run, and pairs each output row with the input item that supplied its ticker. A value can also be a comma-separated list.
+- **From My Watchlist** (Pro): the symbols starred in your Stocklake account.
+- **All Companies** (Earnings Calendar's default): no symbol filter.
+
+Whatever the source, the list is cleaned before anything is sent: trimmed, upper-cased and de-duplicated, with the first occurrence keeping its place. A value that cannot be a ticker does not fail the run. It comes out as its own item (`valid: false` with an `error`), paired with the input item it came from, and the other tickers still run. Lists of more than 25 tickers are sent in batches of 25 and the rows come back in the order of the list (the Earnings Calendar keeps its date order).
+
+Each ticker counts as one call toward your daily limit. When a run needs more than 25 calls, the node says so in the output panel before it starts, for example "About 60 calls against your daily allowance". With **Include Response Metadata** on, `_meta` also carries `estimated_calls`, `requests`, `invalid_symbols` and `duplicates_removed`.
+
 ## Dropdowns that come from Stocklake (version 2)
 
 Some fields that were typed or fixed lists in version 1 are filled from Stocklake when you open them, so they follow the API instead of drifting from it: **Sector** (Screener, Earnings, Sector), **Preset** (Screener; High Conviction is marked "(Pro)"), **Source** and **Direction** (Signal), **Types** (Stock → Get Activity), and the symbol picker, whose list also shows **your watchlist** (marked ★) when you open it with nothing typed.

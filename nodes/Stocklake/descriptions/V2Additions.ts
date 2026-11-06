@@ -4,6 +4,7 @@ import { LIST_SPECS, listOperations } from '../rows';
 import { properties } from './NodeDescription';
 import { withLoadedOptions } from './LoadedOptions';
 import { symbolLocatorField, withDocsLinks } from './shared';
+import { calendarSourceFields, getManySourceFields } from './SymbolSource';
 
 /**
  * Operations and fields that exist in node version 2 only. Version 1 is frozen
@@ -322,18 +323,46 @@ function outputFields(): INodeProperties[] {
 	});
 }
 
+/** Puts the Symbol Source fields in front of Get Many's Symbols field (shown only for a
+ * manual list) and after Earnings Calendar's Days. */
+function withSymbolSource(list: INodeProperties[]): INodeProperties[] {
+	const out: INodeProperties[] = [];
+	for (const property of list) {
+		const key = operationKey(property);
+		if (key === 'stock.getMany' && property.name === 'symbols') {
+			out.push(...getManySourceFields.slice(0, 1));
+			out.push({
+				...property,
+				displayOptions: {
+					show: { ...property.displayOptions?.show, symbolSource: ['manual'] },
+				},
+			});
+			out.push(...getManySourceFields.slice(1));
+			continue;
+		}
+		out.push(property);
+		if (key === 'earnings.getCalendar' && property.name === 'days') {
+			out.push(...calendarSourceFields);
+		}
+	}
+	return out;
+}
+
 /** Version 1's properties plus the five new operations, one item per row, Simplify,
  * Return All / Limit and the metadata option. */
 export const v2Properties: INodeProperties[] = withLoadedOptions([
-	...withReturnAll([
-		...properties.map((property) => {
-			if (property.name !== 'operation') return property;
-			const resource = property.displayOptions?.show?.resource?.[0] as string;
-			if (resource === 'stock') return withExtraOperations(property, 'stock', stockOperationsV2);
-			if (resource === 'market') return withExtraOperations(property, 'market', marketOperationsV2);
-			return property;
-		}),
-		...newFields,
-	]),
+	...withSymbolSource(
+		withReturnAll([
+			...properties.map((property) => {
+				if (property.name !== 'operation') return property;
+				const resource = property.displayOptions?.show?.resource?.[0] as string;
+				if (resource === 'stock') return withExtraOperations(property, 'stock', stockOperationsV2);
+				if (resource === 'market')
+					return withExtraOperations(property, 'market', marketOperationsV2);
+				return property;
+			}),
+			...newFields,
+		]),
+	),
 	...outputFields(),
 ]);
