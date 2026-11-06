@@ -1,1135 +1,1291 @@
 {
-	"version": 1,
-	"credentials": [
-		{
-			"name": "stocklakeApi",
-			"required": false,
-			"displayOptions": {
-				"show": {
-					"authentication": ["apiKey"]
-				}
-			}
-		},
-		{
-			"name": "stocklakeOAuth2Api",
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"authentication": ["oAuth2"]
-				}
-			}
-		}
-	],
-	"properties": [
-		{
-			"name": "credentialNotice",
-			"type": "notice",
-			"default": ""
-		},
-		{
-			"name": "authentication",
-			"type": "options",
-			"default": "apiKey",
-			"options": [
-				{
-					"name": "API Key (or None, for Guest Access)",
-					"value": "apiKey"
-				},
-				{
-					"name": "OAuth2 (Sign In with Stocklake)",
-					"value": "oAuth2"
-				}
-			]
-		},
-		{
-			"name": "resource",
-			"type": "options",
-			"default": "stock",
-			"options": [
-				{
-					"name": "Stock",
-					"value": "stock"
-				},
-				{
-					"name": "Screener",
-					"value": "screener"
-				},
-				{
-					"name": "Market",
-					"value": "market"
-				},
-				{
-					"name": "Sector",
-					"value": "sector"
-				},
-				{
-					"name": "Earnings",
-					"value": "earnings"
-				},
-				{
-					"name": "News",
-					"value": "news"
-				},
-				{
-					"name": "Signal",
-					"value": "signal"
-				},
-				{
-					"name": "Watchlist",
-					"value": "watchlist"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "get",
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get",
-					"value": "get"
-				},
-				{
-					"name": "Get History",
-					"value": "getHistory"
-				},
-				{
-					"name": "Get Indicator History",
-					"value": "getIndicatorHistory"
-				},
-				{
-					"name": "Get Insider Activity",
-					"value": "getInsiderActivity"
-				},
-				{
-					"name": "Get Many",
-					"value": "getMany"
-				},
-				{
-					"name": "Get News",
-					"value": "getNews"
-				},
-				{
-					"name": "Get Research",
-					"value": "getResearch"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "screen",
-			"displayOptions": {
-				"show": {
-					"resource": ["screener"]
-				}
-			},
-			"options": [
-				{
-					"name": "Screen Stocks",
-					"value": "screen"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "getPulse",
-			"displayOptions": {
-				"show": {
-					"resource": ["market"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get Pulse",
-					"value": "getPulse"
-				},
-				{
-					"name": "Get Movers",
-					"value": "getMovers"
-				},
-				{
-					"name": "Get Assessment",
-					"value": "getAssessment"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "getIntelligence",
-			"displayOptions": {
-				"show": {
-					"resource": ["sector"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get Intelligence",
-					"value": "getIntelligence"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "getCalendar",
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get Calendar",
-					"value": "getCalendar"
-				},
-				{
-					"name": "Get Intelligence",
-					"value": "getIntelligence"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "getFeed",
-			"displayOptions": {
-				"show": {
-					"resource": ["news"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get Feed",
-					"value": "getFeed"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "getMany",
-			"displayOptions": {
-				"show": {
-					"resource": ["signal"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get Many",
-					"value": "getMany"
-				}
-			]
-		},
-		{
-			"name": "operation",
-			"type": "options",
-			"default": "get",
-			"displayOptions": {
-				"show": {
-					"resource": ["watchlist"]
-				}
-			},
-			"options": [
-				{
-					"name": "Get",
-					"value": "get"
-				}
-			]
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["get"]
-				}
-			}
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getHistory"]
-				}
-			}
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getNews"]
-				}
-			}
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getResearch"]
-				}
-			}
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getIndicatorHistory"]
-				}
-			}
-		},
-		{
-			"name": "symbol",
-			"type": "resourceLocator",
-			"default": {
-				"mode": "list",
-				"value": ""
-			},
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getInsiderActivity"]
-				}
-			}
-		},
-		{
-			"name": "symbols",
-			"type": "string",
-			"default": "",
-			"required": true,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getMany"]
-				}
-			}
-		},
-		{
-			"name": "days",
-			"type": "number",
-			"default": 90,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getHistory"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1,
-				"maxValue": 365
-			}
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getNews"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "days",
-			"type": "number",
-			"default": 30,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getNews"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "days",
-			"type": "number",
-			"default": 90,
-			"displayOptions": {
-				"show": {
-					"resource": ["stock"],
-					"operation": ["getIndicatorHistory"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1,
-				"maxValue": 730
-			}
-		},
-		{
-			"name": "preset",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["screener"],
-					"operation": ["screen"]
-				}
-			},
-			"options": [
-				{
-					"name": "High Conviction (Pro)",
-					"value": "high_conviction"
-				},
-				{
-					"name": "Momentum",
-					"value": "momentum"
-				},
-				{
-					"name": "None (Use Filters Below)",
-					"value": ""
-				},
-				{
-					"name": "Overbought",
-					"value": "overbought"
-				},
-				{
-					"name": "Oversold",
-					"value": "oversold"
-				}
-			]
-		},
-		{
-			"name": "sector",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["screener"],
-					"operation": ["screen"]
-				}
-			},
-			"options": [
-				{
-					"name": "Any",
-					"value": ""
-				},
-				{
-					"name": "Basic Materials",
-					"value": "Basic Materials"
-				},
-				{
-					"name": "Communication Services",
-					"value": "Communication Services"
-				},
-				{
-					"name": "Consumer Cyclical",
-					"value": "Consumer Cyclical"
-				},
-				{
-					"name": "Consumer Defensive",
-					"value": "Consumer Defensive"
-				},
-				{
-					"name": "Energy",
-					"value": "Energy"
-				},
-				{
-					"name": "Financial Services",
-					"value": "Financial Services"
-				},
-				{
-					"name": "Healthcare",
-					"value": "Healthcare"
-				},
-				{
-					"name": "Industrials",
-					"value": "Industrials"
-				},
-				{
-					"name": "Real Estate",
-					"value": "Real Estate"
-				},
-				{
-					"name": "Technology",
-					"value": "Technology"
-				},
-				{
-					"name": "Utilities",
-					"value": "Utilities"
-				}
-			]
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["screener"],
-					"operation": ["screen"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "additionalFields",
-			"type": "collection",
-			"default": {},
-			"displayOptions": {
-				"show": {
-					"resource": ["screener"],
-					"operation": ["screen"]
-				}
-			},
-			"options": [
-				{
-					"name": "analystRating",
-					"type": "options",
-					"default": "",
-					"options": [
-						{
-							"name": "Any",
-							"value": ""
-						},
-						{
-							"name": "Buy",
-							"value": "buy"
-						},
-						{
-							"name": "Hold",
-							"value": "hold"
-						},
-						{
-							"name": "Sell",
-							"value": "sell"
-						},
-						{
-							"name": "Strong Buy",
-							"value": "strong_buy"
-						},
-						{
-							"name": "Strong Sell",
-							"value": "strong_sell"
-						}
-					]
-				},
-				{
-					"name": "country",
-					"type": "string",
-					"default": ""
-				},
-				{
-					"name": "macdSignal",
-					"type": "options",
-					"default": "",
-					"options": [
-						{
-							"name": "Any",
-							"value": ""
-						},
-						{
-							"name": "Positive",
-							"value": "positive"
-						},
-						{
-							"name": "Negative",
-							"value": "negative"
-						}
-					]
-				},
-				{
-					"name": "maxPerf1d",
-					"type": "number",
-					"default": 0
-				},
-				{
-					"name": "maxPeForward",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0
-					}
-				},
-				{
-					"name": "maxMarketCapB",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0
-					}
-				},
-				{
-					"name": "maxRsi",
-					"type": "number",
-					"default": 100,
-					"typeOptions": {
-						"minValue": 0,
-						"maxValue": 100
-					}
-				},
-				{
-					"name": "minPerf1d",
-					"type": "number",
-					"default": 0
-				},
-				{
-					"name": "minAiScore",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0,
-						"maxValue": 100
-					}
-				},
-				{
-					"name": "minMarketCapB",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0
-					}
-				},
-				{
-					"name": "minRsi",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0,
-						"maxValue": 100
-					}
-				},
-				{
-					"name": "minVolume",
-					"type": "number",
-					"default": 0,
-					"typeOptions": {
-						"minValue": 0
-					}
-				},
-				{
-					"name": "smaTrend",
-					"type": "options",
-					"default": "",
-					"options": [
-						{
-							"name": "Any",
-							"value": ""
-						},
-						{
-							"name": "Above 200-Day SMA",
-							"value": "above_200"
-						},
-						{
-							"name": "Below 200-Day SMA",
-							"value": "below_200"
-						}
-					]
-				},
-				{
-					"name": "sortBy",
-					"type": "options",
-					"default": "market_cap",
-					"options": [
-						{
-							"name": "1-Day Performance",
-							"value": "perf_1d"
-						},
-						{
-							"name": "AI Score (Pro)",
-							"value": "ai_score"
-						},
-						{
-							"name": "Analyst Rating",
-							"value": "analyst_rating"
-						},
-						{
-							"name": "Market Cap",
-							"value": "market_cap"
-						},
-						{
-							"name": "Rating (Pro)",
-							"value": "rating"
-						},
-						{
-							"name": "RSI",
-							"value": "rsi"
-						},
-						{
-							"name": "Volume",
-							"value": "volume"
-						}
-					]
-				},
-				{
-					"name": "sortDir",
-					"type": "options",
-					"default": "desc",
-					"options": [
-						{
-							"name": "Descending",
-							"value": "desc"
-						},
-						{
-							"name": "Ascending",
-							"value": "asc"
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "category",
-			"type": "options",
-			"default": "all",
-			"displayOptions": {
-				"show": {
-					"resource": ["market"],
-					"operation": ["getMovers"]
-				}
-			},
-			"options": [
-				{
-					"name": "All",
-					"value": "all"
-				},
-				{
-					"name": "Gainers",
-					"value": "gainers"
-				},
-				{
-					"name": "Losers",
-					"value": "losers"
-				},
-				{
-					"name": "Most Active",
-					"value": "most_active"
-				}
-			]
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["market"],
-					"operation": ["getMovers"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "minMarketCapB",
-			"type": "number",
-			"default": 0,
-			"displayOptions": {
-				"show": {
-					"resource": ["market"],
-					"operation": ["getMovers"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0
-			}
-		},
-		{
-			"name": "historyCount",
-			"type": "number",
-			"default": 0,
-			"displayOptions": {
-				"show": {
-					"resource": ["market"],
-					"operation": ["getAssessment"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0
-			}
-		},
-		{
-			"name": "sector",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["sector"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"options": [
-				{
-					"name": "All 11 Sectors (Rotation View)",
-					"value": ""
-				},
-				{
-					"name": "Basic Materials",
-					"value": "Basic Materials"
-				},
-				{
-					"name": "Communication Services",
-					"value": "Communication Services"
-				},
-				{
-					"name": "Consumer Cyclical",
-					"value": "Consumer Cyclical"
-				},
-				{
-					"name": "Consumer Defensive",
-					"value": "Consumer Defensive"
-				},
-				{
-					"name": "Energy",
-					"value": "Energy"
-				},
-				{
-					"name": "Financial Services",
-					"value": "Financial Services"
-				},
-				{
-					"name": "Healthcare",
-					"value": "Healthcare"
-				},
-				{
-					"name": "Industrials",
-					"value": "Industrials"
-				},
-				{
-					"name": "Real Estate",
-					"value": "Real Estate"
-				},
-				{
-					"name": "Technology",
-					"value": "Technology"
-				},
-				{
-					"name": "Utilities",
-					"value": "Utilities"
-				}
-			]
-		},
-		{
-			"name": "sortByStrength",
-			"type": "boolean",
-			"default": false,
-			"displayOptions": {
-				"show": {
-					"resource": ["sector"],
-					"operation": ["getIntelligence"]
-				}
-			}
-		},
-		{
-			"name": "historyCount",
-			"type": "number",
-			"default": 0,
-			"displayOptions": {
-				"show": {
-					"resource": ["sector"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0,
-				"maxValue": 3
-			}
-		},
-		{
-			"name": "days",
-			"type": "number",
-			"default": 7,
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"],
-					"operation": ["getCalendar"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1,
-				"maxValue": 30
-			}
-		},
-		{
-			"name": "daysAhead",
-			"type": "number",
-			"default": 14,
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1,
-				"maxValue": 30
-			}
-		},
-		{
-			"name": "sector",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"options": [
-				{
-					"name": "Any",
-					"value": ""
-				},
-				{
-					"name": "Basic Materials",
-					"value": "Basic Materials"
-				},
-				{
-					"name": "Communication Services",
-					"value": "Communication Services"
-				},
-				{
-					"name": "Consumer Cyclical",
-					"value": "Consumer Cyclical"
-				},
-				{
-					"name": "Consumer Defensive",
-					"value": "Consumer Defensive"
-				},
-				{
-					"name": "Energy",
-					"value": "Energy"
-				},
-				{
-					"name": "Financial Services",
-					"value": "Financial Services"
-				},
-				{
-					"name": "Healthcare",
-					"value": "Healthcare"
-				},
-				{
-					"name": "Industrials",
-					"value": "Industrials"
-				},
-				{
-					"name": "Real Estate",
-					"value": "Real Estate"
-				},
-				{
-					"name": "Technology",
-					"value": "Technology"
-				},
-				{
-					"name": "Utilities",
-					"value": "Utilities"
-				}
-			]
-		},
-		{
-			"name": "minAiScore",
-			"type": "number",
-			"default": 0,
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0,
-				"maxValue": 100
-			}
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["earnings"],
-					"operation": ["getIntelligence"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "minSignalScore",
-			"type": "number",
-			"default": 60,
-			"displayOptions": {
-				"show": {
-					"resource": ["news"],
-					"operation": ["getFeed"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0,
-				"maxValue": 100
-			}
-		},
-		{
-			"name": "days",
-			"type": "number",
-			"default": 3,
-			"displayOptions": {
-				"show": {
-					"resource": ["news"],
-					"operation": ["getFeed"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1,
-				"maxValue": 10
-			}
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["news"],
-					"operation": ["getFeed"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		},
-		{
-			"name": "direction",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["signal"],
-					"operation": ["getMany"]
-				}
-			},
-			"options": [
-				{
-					"name": "All",
-					"value": ""
-				},
-				{
-					"name": "Positive",
-					"value": "POSITIVE"
-				},
-				{
-					"name": "Negative",
-					"value": "NEGATIVE"
-				},
-				{
-					"name": "Neutral / Two-Sided",
-					"value": "NEUTRAL"
-				}
-			]
-		},
-		{
-			"name": "source",
-			"type": "options",
-			"default": "",
-			"displayOptions": {
-				"show": {
-					"resource": ["signal"],
-					"operation": ["getMany"]
-				}
-			},
-			"options": [
-				{
-					"name": "All",
-					"value": ""
-				},
-				{
-					"name": "News",
-					"value": "news"
-				},
-				{
-					"name": "Screener",
-					"value": "screener"
-				},
-				{
-					"name": "Sentiment",
-					"value": "sentiment"
-				},
-				{
-					"name": "Social",
-					"value": "social"
-				}
-			]
-		},
-		{
-			"name": "minSignalScore",
-			"type": "number",
-			"default": 60,
-			"displayOptions": {
-				"show": {
-					"resource": ["signal"],
-					"operation": ["getMany"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 0,
-				"maxValue": 100
-			}
-		},
-		{
-			"name": "limit",
-			"type": "number",
-			"default": 50,
-			"displayOptions": {
-				"show": {
-					"resource": ["signal"],
-					"operation": ["getMany"]
-				}
-			},
-			"typeOptions": {
-				"minValue": 1
-			}
-		}
-	]
+  "version": 1,
+  "credentials": [
+    {
+      "name": "stocklakeApi",
+      "required": false,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "apiKey"
+          ]
+        }
+      }
+    },
+    {
+      "name": "stocklakeOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "credentialNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "name": "authentication",
+      "type": "options",
+      "default": "apiKey",
+      "options": [
+        {
+          "name": "API Key (or None, for Guest Access)",
+          "value": "apiKey"
+        },
+        {
+          "name": "OAuth2 (Sign In with Stocklake)",
+          "value": "oAuth2"
+        }
+      ]
+    },
+    {
+      "name": "resource",
+      "type": "options",
+      "default": "stock",
+      "options": [
+        {
+          "name": "Stock",
+          "value": "stock"
+        },
+        {
+          "name": "Screener",
+          "value": "screener"
+        },
+        {
+          "name": "Market",
+          "value": "market"
+        },
+        {
+          "name": "Sector",
+          "value": "sector"
+        },
+        {
+          "name": "Earnings",
+          "value": "earnings"
+        },
+        {
+          "name": "News",
+          "value": "news"
+        },
+        {
+          "name": "Signal",
+          "value": "signal"
+        },
+        {
+          "name": "Watchlist",
+          "value": "watchlist"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "get",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get"
+        },
+        {
+          "name": "Get History",
+          "value": "getHistory"
+        },
+        {
+          "name": "Get Indicator History",
+          "value": "getIndicatorHistory"
+        },
+        {
+          "name": "Get Insider Activity",
+          "value": "getInsiderActivity"
+        },
+        {
+          "name": "Get Many",
+          "value": "getMany"
+        },
+        {
+          "name": "Get News",
+          "value": "getNews"
+        },
+        {
+          "name": "Get Research",
+          "value": "getResearch"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "screen",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "screener"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Screen Stocks",
+          "value": "screen"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "getPulse",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "market"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Pulse",
+          "value": "getPulse"
+        },
+        {
+          "name": "Get Movers",
+          "value": "getMovers"
+        },
+        {
+          "name": "Get Assessment",
+          "value": "getAssessment"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "getIntelligence",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sector"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Intelligence",
+          "value": "getIntelligence"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "getCalendar",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Calendar",
+          "value": "getCalendar"
+        },
+        {
+          "name": "Get Intelligence",
+          "value": "getIntelligence"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "getFeed",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "news"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Feed",
+          "value": "getFeed"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "getMany",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signal"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getMany"
+        }
+      ]
+    },
+    {
+      "name": "operation",
+      "type": "options",
+      "default": "get",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "watchlist"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get"
+        }
+      ]
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getHistory"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getNews"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getResearch"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getIndicatorHistory"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbol",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getInsiderActivity"
+          ]
+        }
+      }
+    },
+    {
+      "name": "symbols",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getMany"
+          ]
+        }
+      }
+    },
+    {
+      "name": "days",
+      "type": "number",
+      "default": 90,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getHistory"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 365
+      }
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getNews"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "days",
+      "type": "number",
+      "default": 30,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getNews"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "days",
+      "type": "number",
+      "default": 90,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "stock"
+          ],
+          "operation": [
+            "getIndicatorHistory"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 730
+      }
+    },
+    {
+      "name": "preset",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "screener"
+          ],
+          "operation": [
+            "screen"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "High Conviction (Pro)",
+          "value": "high_conviction"
+        },
+        {
+          "name": "Momentum",
+          "value": "momentum"
+        },
+        {
+          "name": "None (Use Filters Below)",
+          "value": ""
+        },
+        {
+          "name": "Overbought",
+          "value": "overbought"
+        },
+        {
+          "name": "Oversold",
+          "value": "oversold"
+        }
+      ]
+    },
+    {
+      "name": "sector",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "screener"
+          ],
+          "operation": [
+            "screen"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Any",
+          "value": ""
+        },
+        {
+          "name": "Basic Materials",
+          "value": "Basic Materials"
+        },
+        {
+          "name": "Communication Services",
+          "value": "Communication Services"
+        },
+        {
+          "name": "Consumer Cyclical",
+          "value": "Consumer Cyclical"
+        },
+        {
+          "name": "Consumer Defensive",
+          "value": "Consumer Defensive"
+        },
+        {
+          "name": "Energy",
+          "value": "Energy"
+        },
+        {
+          "name": "Financial Services",
+          "value": "Financial Services"
+        },
+        {
+          "name": "Healthcare",
+          "value": "Healthcare"
+        },
+        {
+          "name": "Industrials",
+          "value": "Industrials"
+        },
+        {
+          "name": "Real Estate",
+          "value": "Real Estate"
+        },
+        {
+          "name": "Technology",
+          "value": "Technology"
+        },
+        {
+          "name": "Utilities",
+          "value": "Utilities"
+        }
+      ]
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "screener"
+          ],
+          "operation": [
+            "screen"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "additionalFields",
+      "type": "collection",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "screener"
+          ],
+          "operation": [
+            "screen"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "analystRating",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "name": "Any",
+              "value": ""
+            },
+            {
+              "name": "Buy",
+              "value": "buy"
+            },
+            {
+              "name": "Hold",
+              "value": "hold"
+            },
+            {
+              "name": "Sell",
+              "value": "sell"
+            },
+            {
+              "name": "Strong Buy",
+              "value": "strong_buy"
+            },
+            {
+              "name": "Strong Sell",
+              "value": "strong_sell"
+            }
+          ]
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "name": "macdSignal",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "name": "Any",
+              "value": ""
+            },
+            {
+              "name": "Positive",
+              "value": "positive"
+            },
+            {
+              "name": "Negative",
+              "value": "negative"
+            }
+          ]
+        },
+        {
+          "name": "maxPerf1d",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "name": "maxPeForward",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0
+          }
+        },
+        {
+          "name": "maxMarketCapB",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0
+          }
+        },
+        {
+          "name": "maxRsi",
+          "type": "number",
+          "default": 100,
+          "typeOptions": {
+            "minValue": 0,
+            "maxValue": 100
+          }
+        },
+        {
+          "name": "minPerf1d",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "name": "minAiScore",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0,
+            "maxValue": 100
+          }
+        },
+        {
+          "name": "minMarketCapB",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0
+          }
+        },
+        {
+          "name": "minRsi",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0,
+            "maxValue": 100
+          }
+        },
+        {
+          "name": "minVolume",
+          "type": "number",
+          "default": 0,
+          "typeOptions": {
+            "minValue": 0
+          }
+        },
+        {
+          "name": "smaTrend",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "name": "Any",
+              "value": ""
+            },
+            {
+              "name": "Above 200-Day SMA",
+              "value": "above_200"
+            },
+            {
+              "name": "Below 200-Day SMA",
+              "value": "below_200"
+            }
+          ]
+        },
+        {
+          "name": "sortBy",
+          "type": "options",
+          "default": "market_cap",
+          "options": [
+            {
+              "name": "1-Day Performance",
+              "value": "perf_1d"
+            },
+            {
+              "name": "AI Score (Pro)",
+              "value": "ai_score"
+            },
+            {
+              "name": "Analyst Rating",
+              "value": "analyst_rating"
+            },
+            {
+              "name": "Market Cap",
+              "value": "market_cap"
+            },
+            {
+              "name": "Rating (Pro)",
+              "value": "rating"
+            },
+            {
+              "name": "RSI",
+              "value": "rsi"
+            },
+            {
+              "name": "Volume",
+              "value": "volume"
+            }
+          ]
+        },
+        {
+          "name": "sortDir",
+          "type": "options",
+          "default": "desc",
+          "options": [
+            {
+              "name": "Descending",
+              "value": "desc"
+            },
+            {
+              "name": "Ascending",
+              "value": "asc"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "category",
+      "type": "options",
+      "default": "all",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "market"
+          ],
+          "operation": [
+            "getMovers"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "All",
+          "value": "all"
+        },
+        {
+          "name": "Gainers",
+          "value": "gainers"
+        },
+        {
+          "name": "Losers",
+          "value": "losers"
+        },
+        {
+          "name": "Most Active",
+          "value": "most_active"
+        }
+      ]
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "market"
+          ],
+          "operation": [
+            "getMovers"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "minMarketCapB",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "market"
+          ],
+          "operation": [
+            "getMovers"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0
+      }
+    },
+    {
+      "name": "historyCount",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "market"
+          ],
+          "operation": [
+            "getAssessment"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0
+      }
+    },
+    {
+      "name": "sector",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sector"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "All 11 Sectors (Rotation View)",
+          "value": ""
+        },
+        {
+          "name": "Basic Materials",
+          "value": "Basic Materials"
+        },
+        {
+          "name": "Communication Services",
+          "value": "Communication Services"
+        },
+        {
+          "name": "Consumer Cyclical",
+          "value": "Consumer Cyclical"
+        },
+        {
+          "name": "Consumer Defensive",
+          "value": "Consumer Defensive"
+        },
+        {
+          "name": "Energy",
+          "value": "Energy"
+        },
+        {
+          "name": "Financial Services",
+          "value": "Financial Services"
+        },
+        {
+          "name": "Healthcare",
+          "value": "Healthcare"
+        },
+        {
+          "name": "Industrials",
+          "value": "Industrials"
+        },
+        {
+          "name": "Real Estate",
+          "value": "Real Estate"
+        },
+        {
+          "name": "Technology",
+          "value": "Technology"
+        },
+        {
+          "name": "Utilities",
+          "value": "Utilities"
+        }
+      ]
+    },
+    {
+      "name": "sortByStrength",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sector"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      }
+    },
+    {
+      "name": "historyCount",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sector"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0,
+        "maxValue": 3
+      }
+    },
+    {
+      "name": "days",
+      "type": "number",
+      "default": 7,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ],
+          "operation": [
+            "getCalendar"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 30
+      }
+    },
+    {
+      "name": "daysAhead",
+      "type": "number",
+      "default": 14,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 30
+      }
+    },
+    {
+      "name": "sector",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Any",
+          "value": ""
+        },
+        {
+          "name": "Basic Materials",
+          "value": "Basic Materials"
+        },
+        {
+          "name": "Communication Services",
+          "value": "Communication Services"
+        },
+        {
+          "name": "Consumer Cyclical",
+          "value": "Consumer Cyclical"
+        },
+        {
+          "name": "Consumer Defensive",
+          "value": "Consumer Defensive"
+        },
+        {
+          "name": "Energy",
+          "value": "Energy"
+        },
+        {
+          "name": "Financial Services",
+          "value": "Financial Services"
+        },
+        {
+          "name": "Healthcare",
+          "value": "Healthcare"
+        },
+        {
+          "name": "Industrials",
+          "value": "Industrials"
+        },
+        {
+          "name": "Real Estate",
+          "value": "Real Estate"
+        },
+        {
+          "name": "Technology",
+          "value": "Technology"
+        },
+        {
+          "name": "Utilities",
+          "value": "Utilities"
+        }
+      ]
+    },
+    {
+      "name": "minAiScore",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0,
+        "maxValue": 100
+      }
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earnings"
+          ],
+          "operation": [
+            "getIntelligence"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "minSignalScore",
+      "type": "number",
+      "default": 60,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "news"
+          ],
+          "operation": [
+            "getFeed"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0,
+        "maxValue": 100
+      }
+    },
+    {
+      "name": "days",
+      "type": "number",
+      "default": 3,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "news"
+          ],
+          "operation": [
+            "getFeed"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 10
+      }
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "news"
+          ],
+          "operation": [
+            "getFeed"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "name": "direction",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signal"
+          ],
+          "operation": [
+            "getMany"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "All",
+          "value": ""
+        },
+        {
+          "name": "Positive",
+          "value": "POSITIVE"
+        },
+        {
+          "name": "Negative",
+          "value": "NEGATIVE"
+        },
+        {
+          "name": "Neutral / Two-Sided",
+          "value": "NEUTRAL"
+        }
+      ]
+    },
+    {
+      "name": "source",
+      "type": "options",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signal"
+          ],
+          "operation": [
+            "getMany"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "All",
+          "value": ""
+        },
+        {
+          "name": "News",
+          "value": "news"
+        },
+        {
+          "name": "Screener",
+          "value": "screener"
+        },
+        {
+          "name": "Sentiment",
+          "value": "sentiment"
+        },
+        {
+          "name": "Social",
+          "value": "social"
+        }
+      ]
+    },
+    {
+      "name": "minSignalScore",
+      "type": "number",
+      "default": 60,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signal"
+          ],
+          "operation": [
+            "getMany"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 0,
+        "maxValue": 100
+      }
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signal"
+          ],
+          "operation": [
+            "getMany"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    }
+  ]
 }

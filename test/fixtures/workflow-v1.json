@@ -1,428 +1,491 @@
 {
-	"name": "Built on n8n-nodes-stocklake 0.1.1",
-	"nodes": [
-		{
-			"id": "trigger",
-			"name": "Manual",
-			"type": "n8n-nodes-base.manualTrigger",
-			"typeVersion": 1,
-			"position": [0, 0],
-			"parameters": {}
-		},
-		{
-			"id": "n1",
-			"name": "stock.get",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 80],
-			"parameters": {
-				"resource": "stock",
-				"operation": "get",
-				"symbol": {
-					"__rl": true,
-					"value": "AAPL",
-					"mode": "list",
-					"cachedResultName": "AAPL"
-				}
-			}
-		},
-		{
-			"id": "n2",
-			"name": "stock.getMany",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 160],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getMany",
-				"symbols": "aapl, MSFT ,aapl, nvda"
-			}
-		},
-		{
-			"id": "n3",
-			"name": "stock.getHistory (default days)",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 240],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getHistory",
-				"symbol": {
-					"__rl": true,
-					"value": "TSLA",
-					"mode": "list",
-					"cachedResultName": "TSLA"
-				}
-			}
-		},
-		{
-			"id": "n4",
-			"name": "stock.getHistory (days set)",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 320],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getHistory",
-				"symbol": {
-					"__rl": true,
-					"value": "TSLA",
-					"mode": "list",
-					"cachedResultName": "TSLA"
-				},
-				"days": 30
-			}
-		},
-		{
-			"id": "n5",
-			"name": "stock.getNews",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 400],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getNews",
-				"symbol": {
-					"__rl": true,
-					"value": "NVDA",
-					"mode": "list",
-					"cachedResultName": "NVDA"
-				},
-				"limit": 5,
-				"days": 7
-			}
-		},
-		{
-			"id": "n6",
-			"name": "stock.getResearch",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 480],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getResearch",
-				"symbol": {
-					"__rl": true,
-					"value": "COIN",
-					"mode": "list",
-					"cachedResultName": "COIN"
-				}
-			}
-		},
-		{
-			"id": "n7",
-			"name": "stock.getIndicatorHistory",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 560],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getIndicatorHistory",
-				"symbol": {
-					"__rl": true,
-					"value": "MSFT",
-					"mode": "list",
-					"cachedResultName": "MSFT"
-				},
-				"days": 60
-			}
-		},
-		{
-			"id": "n8",
-			"name": "stock.getInsiderActivity",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 640],
-			"parameters": {
-				"resource": "stock",
-				"operation": "getInsiderActivity",
-				"symbol": {
-					"__rl": true,
-					"value": "AAPL",
-					"mode": "list",
-					"cachedResultName": "AAPL"
-				}
-			}
-		},
-		{
-			"id": "n9",
-			"name": "screener.screen (preset only)",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 720],
-			"parameters": {
-				"resource": "screener",
-				"operation": "screen",
-				"preset": "oversold",
-				"limit": 10
-			}
-		},
-		{
-			"id": "n10",
-			"name": "screener.screen (additional filters, snake_case on the wire)",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 800],
-			"parameters": {
-				"resource": "screener",
-				"operation": "screen",
-				"sector": "Technology",
-				"limit": 25,
-				"additionalFields": {
-					"minRsi": 30,
-					"maxRsi": 45,
-					"smaTrend": "above_200",
-					"macdSignal": "positive",
-					"minMarketCapB": 10,
-					"maxPeForward": 25,
-					"analystRating": "buy",
-					"minAiScore": 60,
-					"sortBy": "perf_1d",
-					"sortDir": "desc",
-					"country": "United States"
-				}
-			}
-		},
-		{
-			"id": "n11",
-			"name": "market.getPulse",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 880],
-			"parameters": {
-				"resource": "market",
-				"operation": "getPulse"
-			}
-		},
-		{
-			"id": "n12",
-			"name": "market.getMovers",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 960],
-			"parameters": {
-				"resource": "market",
-				"operation": "getMovers",
-				"category": "gainers",
-				"limit": 5,
-				"minMarketCapB": 2
-			}
-		},
-		{
-			"id": "n13",
-			"name": "market.getAssessment",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1040],
-			"parameters": {
-				"resource": "market",
-				"operation": "getAssessment",
-				"historyCount": 3
-			}
-		},
-		{
-			"id": "n14",
-			"name": "sector.getIntelligence",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1120],
-			"parameters": {
-				"resource": "sector",
-				"operation": "getIntelligence",
-				"sector": "Energy",
-				"sortByStrength": true,
-				"historyCount": 2
-			}
-		},
-		{
-			"id": "n15",
-			"name": "earnings.getCalendar",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1200],
-			"parameters": {
-				"resource": "earnings",
-				"operation": "getCalendar",
-				"days": 10
-			}
-		},
-		{
-			"id": "n16",
-			"name": "earnings.getIntelligence",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1280],
-			"parameters": {
-				"resource": "earnings",
-				"operation": "getIntelligence",
-				"daysAhead": 7,
-				"sector": "Technology",
-				"minAiScore": 55,
-				"limit": 15
-			}
-		},
-		{
-			"id": "n17",
-			"name": "news.getFeed",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1360],
-			"parameters": {
-				"resource": "news",
-				"operation": "getFeed",
-				"minSignalScore": 70,
-				"days": 2,
-				"limit": 8
-			}
-		},
-		{
-			"id": "n18",
-			"name": "signal.getMany",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1440],
-			"parameters": {
-				"resource": "signal",
-				"operation": "getMany",
-				"direction": "LONG",
-				"source": "sector_screener",
-				"minSignalScore": 65,
-				"limit": 20
-			}
-		},
-		{
-			"id": "n19",
-			"name": "watchlist.get",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1520],
-			"parameters": {
-				"resource": "watchlist",
-				"operation": "get"
-			}
-		},
-		{
-			"id": "n20",
-			"name": "stock.get (defaults omitted)",
-			"type": "n8n-nodes-stocklake.stocklake",
-			"typeVersion": 1,
-			"position": [220, 1600],
-			"parameters": {
-				"symbol": {
-					"__rl": true,
-					"value": "AAPL",
-					"mode": "id"
-				}
-			}
-		}
-	],
-	"connections": {
-		"Manual": {
-			"main": [
-				[
-					{
-						"node": "stock.get",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getMany",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getHistory (default days)",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getHistory (days set)",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getNews",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getResearch",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getIndicatorHistory",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.getInsiderActivity",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "screener.screen (preset only)",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "screener.screen (additional filters, snake_case on the wire)",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "market.getPulse",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "market.getMovers",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "market.getAssessment",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "sector.getIntelligence",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "earnings.getCalendar",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "earnings.getIntelligence",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "news.getFeed",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "signal.getMany",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "watchlist.get",
-						"type": "main",
-						"index": 0
-					},
-					{
-						"node": "stock.get (defaults omitted)",
-						"type": "main",
-						"index": 0
-					}
-				]
-			]
-		}
-	},
-	"pinData": {}
+  "name": "Built on n8n-nodes-stocklake 0.1.1",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n1",
+      "name": "stock.get",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        80
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "get",
+        "symbol": {
+          "__rl": true,
+          "value": "AAPL",
+          "mode": "list",
+          "cachedResultName": "AAPL"
+        }
+      }
+    },
+    {
+      "id": "n2",
+      "name": "stock.getMany",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        160
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getMany",
+        "symbols": "aapl, MSFT ,aapl, nvda"
+      }
+    },
+    {
+      "id": "n3",
+      "name": "stock.getHistory (default days)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        240
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getHistory",
+        "symbol": {
+          "__rl": true,
+          "value": "TSLA",
+          "mode": "list",
+          "cachedResultName": "TSLA"
+        }
+      }
+    },
+    {
+      "id": "n4",
+      "name": "stock.getHistory (days set)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        320
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getHistory",
+        "symbol": {
+          "__rl": true,
+          "value": "TSLA",
+          "mode": "list",
+          "cachedResultName": "TSLA"
+        },
+        "days": 30
+      }
+    },
+    {
+      "id": "n5",
+      "name": "stock.getNews",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        400
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getNews",
+        "symbol": {
+          "__rl": true,
+          "value": "NVDA",
+          "mode": "list",
+          "cachedResultName": "NVDA"
+        },
+        "limit": 5,
+        "days": 7
+      }
+    },
+    {
+      "id": "n6",
+      "name": "stock.getResearch",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        480
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getResearch",
+        "symbol": {
+          "__rl": true,
+          "value": "COIN",
+          "mode": "list",
+          "cachedResultName": "COIN"
+        }
+      }
+    },
+    {
+      "id": "n7",
+      "name": "stock.getIndicatorHistory",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        560
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getIndicatorHistory",
+        "symbol": {
+          "__rl": true,
+          "value": "MSFT",
+          "mode": "list",
+          "cachedResultName": "MSFT"
+        },
+        "days": 60
+      }
+    },
+    {
+      "id": "n8",
+      "name": "stock.getInsiderActivity",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        640
+      ],
+      "parameters": {
+        "resource": "stock",
+        "operation": "getInsiderActivity",
+        "symbol": {
+          "__rl": true,
+          "value": "AAPL",
+          "mode": "list",
+          "cachedResultName": "AAPL"
+        }
+      }
+    },
+    {
+      "id": "n9",
+      "name": "screener.screen (preset only)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "preset": "oversold",
+        "limit": 10
+      }
+    },
+    {
+      "id": "n10",
+      "name": "screener.screen (additional filters, snake_case on the wire)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        800
+      ],
+      "parameters": {
+        "resource": "screener",
+        "operation": "screen",
+        "sector": "Technology",
+        "limit": 25,
+        "additionalFields": {
+          "minRsi": 30,
+          "maxRsi": 45,
+          "smaTrend": "above_200",
+          "macdSignal": "positive",
+          "minMarketCapB": 10,
+          "maxPeForward": 25,
+          "analystRating": "buy",
+          "minAiScore": 60,
+          "sortBy": "perf_1d",
+          "sortDir": "desc",
+          "country": "United States"
+        }
+      }
+    },
+    {
+      "id": "n11",
+      "name": "market.getPulse",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        880
+      ],
+      "parameters": {
+        "resource": "market",
+        "operation": "getPulse"
+      }
+    },
+    {
+      "id": "n12",
+      "name": "market.getMovers",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        960
+      ],
+      "parameters": {
+        "resource": "market",
+        "operation": "getMovers",
+        "category": "gainers",
+        "limit": 5,
+        "minMarketCapB": 2
+      }
+    },
+    {
+      "id": "n13",
+      "name": "market.getAssessment",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1040
+      ],
+      "parameters": {
+        "resource": "market",
+        "operation": "getAssessment",
+        "historyCount": 3
+      }
+    },
+    {
+      "id": "n14",
+      "name": "sector.getIntelligence",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1120
+      ],
+      "parameters": {
+        "resource": "sector",
+        "operation": "getIntelligence",
+        "sector": "Energy",
+        "sortByStrength": true,
+        "historyCount": 2
+      }
+    },
+    {
+      "id": "n15",
+      "name": "earnings.getCalendar",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1200
+      ],
+      "parameters": {
+        "resource": "earnings",
+        "operation": "getCalendar",
+        "days": 10
+      }
+    },
+    {
+      "id": "n16",
+      "name": "earnings.getIntelligence",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1280
+      ],
+      "parameters": {
+        "resource": "earnings",
+        "operation": "getIntelligence",
+        "daysAhead": 7,
+        "sector": "Technology",
+        "minAiScore": 55,
+        "limit": 15
+      }
+    },
+    {
+      "id": "n17",
+      "name": "news.getFeed",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1360
+      ],
+      "parameters": {
+        "resource": "news",
+        "operation": "getFeed",
+        "minSignalScore": 70,
+        "days": 2,
+        "limit": 8
+      }
+    },
+    {
+      "id": "n18",
+      "name": "signal.getMany",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1440
+      ],
+      "parameters": {
+        "resource": "signal",
+        "operation": "getMany",
+        "direction": "LONG",
+        "source": "sector_screener",
+        "minSignalScore": 65,
+        "limit": 20
+      }
+    },
+    {
+      "id": "n19",
+      "name": "watchlist.get",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1520
+      ],
+      "parameters": {
+        "resource": "watchlist",
+        "operation": "get"
+      }
+    },
+    {
+      "id": "n20",
+      "name": "stock.get (defaults omitted)",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1600
+      ],
+      "parameters": {
+        "symbol": {
+          "__rl": true,
+          "value": "AAPL",
+          "mode": "id"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "stock.get",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getMany",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getHistory (default days)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getHistory (days set)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getNews",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getResearch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getIndicatorHistory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.getInsiderActivity",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "screener.screen (preset only)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "screener.screen (additional filters, snake_case on the wire)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "market.getPulse",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "market.getMovers",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "market.getAssessment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "sector.getIntelligence",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "earnings.getCalendar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "earnings.getIntelligence",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "news.getFeed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "signal.getMany",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "watchlist.get",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "stock.get (defaults omitted)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
 }

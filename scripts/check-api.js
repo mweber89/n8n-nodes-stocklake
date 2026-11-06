@@ -2,10 +2,10 @@
 'use strict';
 
 /**
- * Calls every version-2 operation against the real Stocklake API as a guest and,
+ * Calls every version-2 operation against the Stocklake API as a guest and,
  * when keys are given, with a free and a Pro key. Needs a build (`npm run build`).
  *
- *   STOCKLAKE_FREE_KEY=sl_... STOCKLAKE_PRO_KEY=sl_... node scripts/live-check.js
+ *   STOCKLAKE_FREE_KEY=sl_... STOCKLAKE_PRO_KEY=sl_... node scripts/check-api.js
  *
  * Keys are read from the environment only and never printed. This uses the daily
  * quota of the keys it is given (and 25 guest calls per IP), so it is a manual

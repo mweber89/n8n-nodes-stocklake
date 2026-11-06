@@ -57,15 +57,15 @@ n8n does.
 delayed about 15 minutes) and on any data-provider or model name in files that
 ship.
 
-## Checking against the live API
+## Checking against the real API
 
-`scripts/live-check.js` runs the version-2 operations through the node's real
+`scripts/check-api.js` runs the version-2 operations through the node's real
 `execute()` against api.stocklake.dev as a guest, and with a free and a Pro key if
 you pass them:
 
 ```bash
 npm run build
-STOCKLAKE_FREE_KEY=... STOCKLAKE_PRO_KEY=... node scripts/live-check.js
+STOCKLAKE_FREE_KEY=... STOCKLAKE_PRO_KEY=... node scripts/check-api.js
 ```
 
 Keys come from the environment only and are never printed or stored. It spends

@@ -70,9 +70,7 @@ test('a pro_required rejection surfaces one actionable line, not the raw JSON pa
 	};
 
 	await assert.rejects(
-		callWith({
-			result: { isError: true, content: [{ type: 'text', text: JSON.stringify(payload) }] },
-		}),
+		callWith({ result: { isError: true, content: [{ type: 'text', text: JSON.stringify(payload) }] } }),
 		(err) => {
 			assert.match(err.message, /requires a Stocklake Pro account/);
 			assert.match(err.message, /stocklake\.dev\/account/);
@@ -96,18 +94,12 @@ test('a partial batch miss is NOT an error — missing symbols are normal output
 		missing: ['ZZZZNOTREAL'],
 		duplicates_collapsed: 0,
 	};
-	assert.deepEqual(
-		await callWith({ result: { isError: false, structuredContent } }),
-		structuredContent,
-	);
+	assert.deepEqual(await callWith({ result: { isError: false, structuredContent } }), structuredContent);
 });
 
 test('an empty screener result is NOT an error — count 0 is a valid answer', async () => {
 	const structuredContent = { count: 0, preset: null, filters: {}, results: [] };
-	assert.deepEqual(
-		await callWith({ result: { isError: false, structuredContent } }),
-		structuredContent,
-	);
+	assert.deepEqual(await callWith({ result: { isError: false, structuredContent } }), structuredContent);
 });
 
 test('a plain-text isError payload (unknown tool) is surfaced verbatim', async () => {
@@ -128,10 +120,7 @@ test('a JSON-RPC protocol error is surfaced with its own message', async () => {
 
 test('a normal successful response is returned unchanged', async () => {
 	const structuredContent = { symbol: 'AAPL', price: 316.85 };
-	assert.deepEqual(
-		await callWith({ result: { isError: false, structuredContent } }),
-		structuredContent,
-	);
+	assert.deepEqual(await callWith({ result: { isError: false, structuredContent } }), structuredContent);
 });
 
 test('an empty response envelope is an error, not an empty item', async () => {

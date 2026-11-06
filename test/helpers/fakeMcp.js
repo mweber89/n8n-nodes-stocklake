@@ -64,10 +64,7 @@ function createFakeMcp(tools = {}) {
 		return {
 			jsonrpc: '2.0',
 			id: body.id,
-			result: {
-				content: [{ type: 'text', text: JSON.stringify(payload) }],
-				structuredContent: payload,
-			},
+			result: { content: [{ type: 'text', text: JSON.stringify(payload) }], structuredContent: payload },
 		};
 	}
 
@@ -159,9 +156,7 @@ async function runNode(node, opts) {
 			name: 'Stocklake',
 			type: 'n8n-nodes-stocklake.stocklake',
 			typeVersion,
-			credentials: apiKeyCredential
-				? { stocklakeApi: { id: '1', name: 'Stocklake API' } }
-				: undefined,
+			credentials: apiKeyCredential ? { stocklakeApi: { id: '1', name: 'Stocklake API' } } : undefined,
 		}),
 		continueOnFail: () => continueOnFail,
 		helpers: {
