@@ -1,0 +1,142 @@
+{
+  "name": "Stocklake - Check my holdings",
+  "nodes": [
+    {
+      "id": "c0ffee00-0001-4000-8000-000000000001",
+      "name": "Run it",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c0ffee00-0002-4000-8000-000000000002",
+      "name": "My holdings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Replace this with your own source: a Google Sheet, Airtable, a CSV, a broker export.\n// One item per holding: symbol, quantity and (optionally) cost per share.\nreturn [\n  { json: { symbol: 'AAPL', quantity: 40, cost: 150.0 } },\n  { json: { symbol: 'MSFT', quantity: 15, cost: 310.5 } },\n  { json: { symbol: 'NVDA', quantity: 60, cost: 95.2 } },\n  { json: { symbol: 'SAP.DE', quantity: 25, cost: 140 } },\n];"
+      }
+    },
+    {
+      "id": "c0ffee00-0003-4000-8000-000000000003",
+      "name": "Check Holdings",
+      "type": "n8n-nodes-stocklake.stocklake",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "resource": "portfolio",
+        "operation": "checkHoldings",
+        "holdingSymbol": "={{ $json.symbol }}",
+        "holdingQuantity": "={{ $json.quantity }}",
+        "holdingCost": "={{ $json.cost }}",
+        "holdingOptions": {
+          "earningsWithinDays": 7,
+          "overboughtAbove": 70,
+          "oversoldBelow": 30
+        }
+      }
+    },
+    {
+      "id": "c0ffee00-0004-4000-8000-000000000004",
+      "name": "Write the message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst summary = rows.find(r => r.kind === 'summary');\nconst holdings = rows.filter(r => r.kind === 'holding');\nconst flagged = holdings.filter(r => (r.flags || []).length > 0);\nconst failed = holdings.filter(r => r.found === false || r.valid === false);\n\nconst lines = [];\nif (summary.currency) {\n  lines.push(`Portfolio ${summary.total_value} ${summary.currency}, today ${summary.day_change} (${summary.day_change_pct}%)`);\n  if (summary.top_weight_symbol) lines.push(`Largest position: ${summary.top_weight_symbol} at ${summary.top_weight_pct}%`);\n} else {\n  for (const g of summary.by_currency) {\n    lines.push(`${g.currency}: ${g.total_value}, today ${g.day_change} (${g.day_change_pct}%)`);\n  }\n}\nfor (const h of flagged) lines.push(`${h.symbol}: ${h.flags.join(', ')}`);\nif (failed.length) lines.push('Not checked: ' + failed.map(h => `${h.symbol} (${h.error})`).join('; '));\n\nreturn [{ json: { message: lines.join('\\n'), flagged: flagged.length } }];"
+      }
+    },
+    {
+      "id": "c0ffee00-0005-4000-8000-000000000005",
+      "name": "Message ready",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {},
+      "notes": "Wire this to Slack, Send Email, Telegram, etc. Add an IF on {{ $json.flagged }} to message only when something needs a look."
+    },
+    {
+      "id": "c0ffee00-0006-4000-8000-000000000006",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "parameters": {
+        "content": "## Check Holdings\nSend one item per holding with `symbol`, `quantity` and optionally `cost` (per share).\n\nYou get one item per holding (value, day change, profit or loss against cost, weight, flags) and one summary item (`kind: summary`). Flags: `rsi_overbought`, `rsi_oversold`, `earnings_soon` and, on Pro, `large_insider_sale`.\n\nA holding Stocklake cannot price comes back with `found: false` and an `error`; the others are still valued. Holdings in several currencies are totalled per currency (`by_currency`), not added together.",
+        "width": 620,
+        "height": 240
+      }
+    }
+  ],
+  "connections": {
+    "Run it": {
+      "main": [
+        [
+          {
+            "node": "My holdings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "My holdings": {
+      "main": [
+        [
+          {
+            "node": "Check Holdings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Holdings": {
+      "main": [
+        [
+          {
+            "node": "Write the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write the message": {
+      "main": [
+        [
+          {
+            "node": "Message ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

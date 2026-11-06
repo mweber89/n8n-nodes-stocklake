@@ -88,6 +88,13 @@ has the fields. `test/symbolSource.test.js` covers them, and
 `STOCKLAKE_PRO_KEY=... node scripts/check-symbols.js` runs 60 tickers through the real
 node against the real API (it uses 60 calls of the key's daily limit).
 
+## Composite operations
+
+Stock → Compare, Stock → Snapshot and Portfolio → Check Holdings (version 2) call more than one tool and shape the result, so they have no entry in `ToolMapping.ts` or `LIST_SPECS`. `executeRows` hands them to `executeComposite.ts`; every rule (columns, ranking, valuing and flagging a holding, the summary, the snapshot sentence) is a pure function in `composites.ts`, tested on its own in `test/composites.test.js` and again through `execute()`.
+
+- One bad symbol must not sink the rest. `readBatch` splits a request that fails on its arguments until the symbol stands alone; a failure that every symbol would share (401/403/429, a used-up allowance) ends the run instead. Extra calls (earnings calendar, insider sales, the latest filing) degrade to a note, never to a failure.
+- A new composite goes in `COMPOSITE_OPERATIONS`, in `OPERATION_TOOLS` (the tool its docs link points to), in the free list of `test/copy.test.js`, and gets an example under `examples/` that `test/composites.test.js` runs.
+
 ## Dropdowns loaded from Stocklake
 
 `nodes/Stocklake/loadOptions.ts` holds the `methods.loadOptions` functions and the

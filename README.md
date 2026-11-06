@@ -24,7 +24,7 @@ Credentials are otherwise **optional**. Without one, the node calls Stocklake as
 
 | Tier  | Calls/day | Operations |
 |-------|-----------|------------|
-| Guest (no credential) | 25 | Free operations: Stock: Get / Get Many / Get History / Get News / Get Insider Activity / Get Financials / Get Filings / Get Activity · Market: Get Movers / Get Pulse / Get Economic Calendar · Earnings: Get Calendar · Screener: Screen Stocks |
+| Guest (no credential) | 25 | Free operations: Stock: Get / Get Many / Compare / Snapshot / Get History / Get News / Get Insider Activity / Get Financials / Get Filings / Get Activity · Portfolio: Check Holdings · Market: Get Movers / Get Pulse / Get Economic Calendar · Earnings: Get Calendar · Screener: Screen Stocks |
 | Free  | 200 | Same operations as guest |
 | Pro   | 5000 | All of the above (with more on some: the AI read on Get Insider Activity, five years and quarterly statements on Get Financials, summaries on Get Filings, the content of each Get Activity item, a longer Get Economic Calendar window), plus: Stock: Get Research / Get Indicator History / Get Analyst Trend · Market: Get Assessment · Sector: Get Intelligence · Earnings: Get Intelligence · News: Get Feed · Signal: Get Many · Watchlist: Get |
 
@@ -32,9 +32,10 @@ A Pro-only operation called without a Pro key returns a clear error explaining w
 
 ## Resources & operations
 
-The Stocklake API has 22 tools: 13 available without Pro and 9 that need it. Version 2 of this node exposes all 22 (13 free, 9 Pro), grouped into 8 resources; version 1 has the original 17. Each operation links to its reference page:
+The Stocklake API has 22 tools: 13 available without Pro and 9 that need it. Version 2 of this node exposes all 25 (16 free, 9 Pro) operations, grouped into 9 resources: the 22 tools and three operations that combine several calls (Compare, Snapshot, Check Holdings); version 1 has the original 17. Each operation links to its reference page:
 
 - **Stock** ([reference](https://stocklake.dev/docs/tools#get_stock)) — Get, Get Many (batch, up to 25 symbols), Get History, Get News, Get Research, Get Indicator History, Get Insider Activity, plus new in version 2: Get Financials ([reference](https://stocklake.dev/docs/tools#get_stock_financials); balance sheet, income statement and cash flow, latest year free, 5 years and quarterly on Pro), Get Filings ([reference](https://stocklake.dev/docs/tools#get_stock_filings); SEC 8-K filings, summaries on Pro), Get Activity ([reference](https://stocklake.dev/docs/tools#get_stock_activity); one timeline of news, filings, insider trades, earnings, analyst changes and setups), Get Analyst Trend ([reference](https://stocklake.dev/docs/tools#get_analyst_trend); Pro)
+- **Portfolio** (new in version 2; built on [get_stocks](https://stocklake.dev/docs/tools#get_stocks)) — Check Holdings. Stock also gains Compare and Snapshot (see [Combined operations](#combined-operations-version-2))
 - **Screener** ([reference](https://stocklake.dev/docs/tools#get_screener)) — Screen Stocks (filter/rank the universe by sector, RSI, market cap, analyst rating, AI score, and more)
 - **Market** ([reference](https://stocklake.dev/docs/tools#get_market_pulse)) — Get Pulse (VIX, Fear & Greed, breadth), Get Movers, Get Assessment (AI macro regime), and new in version 2: Get Economic Calendar ([reference](https://stocklake.dev/docs/tools#get_economic_calendar); rate decisions, CPI, GDP, payrolls)
 - **Sector** ([reference](https://stocklake.dev/docs/tools#get_sector_intelligence)) — Get Intelligence (one sector, or all 11 as a rotation view)
@@ -86,6 +87,24 @@ Version 1 keeps returning the whole response as one item; its output has not cha
 Every failure is a node error whose description says what to do: which plan an operation needs, which symbol was not found, the accepted values the API lists for an invalid argument, whether a timeout or an unreachable server is the cause. With **Continue On Fail** a failed item becomes `{ "error": "...", "errorDescription": "..." }` (plus `httpCode` for an HTTP failure) paired with its input item; a failure in a run over the whole input (From input items, From my watchlist) is paired with all of them.
 
 When a free or guest credential gets a response with fields left out, the node adds an execution hint to the output ("Rating and AI fields need Pro" or the API's own note on what the plan leaves out), once per run.
+
+## Combined operations (version 2)
+
+Three operations combine several calls and shape the result inside n8n, which the generic MCP Client node cannot do. All three are free; a Pro account adds columns or flags. Each has a ready-to-run workflow in [`examples/`](./examples) (paste the file onto an empty canvas).
+
+**Stock → Compare** ([example](./examples/compare-stocks.workflow.json)) puts 2 to 25 stocks side by side in one request. You get one item per stock with the same columns on every item: `price`, `change_pct`, `market_cap_usd`, `pe_forward`, `pe_trailing`, `rsi`, `week52_low`, `week52_high`, `week52_position_pct` (0 at the 52-week low, 100 at the high), `analyst_rating`, `analyst_target`, `analyst_upside_pct`, and on Pro `rating_score`, `rating_direction`, `ai_verdict`, `ai_score`. A value Stocklake does not have is `null`, not a missing key. **Rank By** sorts the items by a column and adds `rank` (1 is first; equal values share a rank; stocks without a value come last with `rank: null`); **Order** says which end comes first. The tickers come from the Symbols field, or with **Symbol Source: From Input Items** from all input items together.
+
+**Stock → Snapshot** ([example](./examples/stock-snapshot.workflow.json)) reads one stock into one flat item for people and AI agents: the quote, `rsi` and `rsi_state`, `macd_state`, `price_vs_sma50` / `price_vs_sma200`, the 52-week position, the analyst view, `next_earnings_date` and `next_earnings_in_days`, the latest filing's date, title, headline and link, on Pro the rating and the AI verdict, and a `summary` sentence with the same facts. It makes two requests; if the filing request fails you still get the snapshot, with a `notes` entry saying so.
+
+**Portfolio → Check Holdings** ([example](./examples/check-holdings.workflow.json)) takes one input item per holding. **Symbol**, **Quantity** and **Cost** are expressions (`{{ $json.symbol }}`, `{{ $json.quantity }}`, `{{ $json.cost }}` by default); Cost is optional and is the price per share unless **Options → Cost Is** says it is the total. Items with the same ticker are added up as lots of one holding, with the weighted average cost. Each holding comes back as an item with `value`, `day_change`, `day_change_pct`, `cost`, `pl`, `pl_pct`, `weight_pct`, `rsi`, `earnings_date`, `earnings_in_days` and `flags`:
+
+- `rsi_overbought` / `rsi_oversold`: RSI at or above 70 / at or below 30 (change the limits in Options).
+- `earnings_soon`: earnings within 7 days (Options: up to 30). The dates come from the earnings calendar; a stock the calendar does not list uses its own earnings date.
+- `large_insider_sale` (Pro): insiders sold $1,000,000 or more in the last 30 days (Options: the amount, or switch the check off). It costs one call per holding; on a free account it is skipped and the output says so.
+
+One more item, `kind: "summary"`, follows the holdings: `total_value`, `day_change`, `day_change_pct`, `total_cost`, `total_pl`, `top_weight_symbol`, `top_weight_pct`, `flagged_holdings`, and which holdings carry which flag. Holdings in several currencies are valued in their own currency and totalled per currency in `by_currency` (there is no single total or weight without exchange rates). **Options → Output** returns the holdings only or the summary only.
+
+Quotes are read 25 holdings per request, as in Get Many. **One bad symbol does not sink the batch**: in all three operations a ticker Stocklake does not know, a value that cannot be a ticker, a quantity that is not a number, and a request that fails because of one symbol each come back as their own item (`found: false` or `valid: false`, with an `error`), paired with the input item they came from, and everything else is still returned. A failure that would hit every symbol alike (a rejected key, a used-up daily limit) stops the run with the usual error. The summary counts the holdings it could not value in `failed`.
 
 ## Symbols from earlier steps (version 2)
 

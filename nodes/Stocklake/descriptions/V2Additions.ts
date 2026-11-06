@@ -3,6 +3,15 @@ import type { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 import { LIST_SPECS, listOperations } from '../rows';
 import { properties } from './NodeDescription';
 import { withLoadedOptions } from './LoadedOptions';
+import {
+	compareFields,
+	compareOperation,
+	holdingsFields,
+	portfolioOperations,
+	portfolioResource,
+	snapshotFields,
+	snapshotOperation,
+} from './CompositeDescription';
 import { symbolLocatorField, withDocsLinks } from './shared';
 import { calendarSourceFields, getManySourceFields } from './SymbolSource';
 
@@ -15,6 +24,7 @@ import { calendarSourceFields, getManySourceFields } from './SymbolSource';
  */
 
 const stockOperationsV2: INodePropertyOptions[] = [
+	compareOperation,
 	{
 		name: 'Get Activity',
 		value: 'getActivity',
@@ -43,6 +53,7 @@ const stockOperationsV2: INodePropertyOptions[] = [
 			'Balance sheet, income statement and cash flow line items (free: the latest fiscal year; Pro: up to 5 years and quarterly)',
 		action: 'Get stock financials',
 	},
+	snapshotOperation,
 ];
 
 const marketOperationsV2: INodePropertyOptions[] = [
@@ -72,6 +83,9 @@ function withExtraOperations(
 }
 
 const newFields: INodeProperties[] = [
+	...compareFields,
+	...snapshotFields,
+	...holdingsFields,
 	symbolLocatorField('Symbol', 'symbol', 'stock', 'getFinancials'),
 	symbolLocatorField('Symbol', 'symbol', 'stock', 'getFilings'),
 	symbolLocatorField('Symbol', 'symbol', 'stock', 'getActivity'),
@@ -390,13 +404,22 @@ const requestOptionsField: INodeProperties = {
 export const v2Properties: INodeProperties[] = withLoadedOptions([
 	...withSymbolSource(
 		withReturnAll([
-			...properties.map((property) => {
-				if (property.name !== 'operation') return property;
+			...properties.flatMap((property): INodeProperties[] => {
+				if (property.name === 'resource') {
+					return [{ ...property, options: [...(property.options ?? []), portfolioResource] }];
+				}
+				if (property.name !== 'operation') return [property];
 				const resource = property.displayOptions?.show?.resource?.[0] as string;
-				if (resource === 'stock') return withExtraOperations(property, 'stock', stockOperationsV2);
+				if (resource === 'stock')
+					return [withExtraOperations(property, 'stock', stockOperationsV2)];
 				if (resource === 'market')
-					return withExtraOperations(property, 'market', marketOperationsV2);
-				return property;
+					return [withExtraOperations(property, 'market', marketOperationsV2)];
+				// The Portfolio resource is new in version 2; its operation selector follows the
+				// last version 1 one.
+				if (resource === 'watchlist') {
+					return [property, withDocsLinks('portfolio', portfolioOperations)];
+				}
+				return [property];
 			}),
 			...newFields,
 		]),

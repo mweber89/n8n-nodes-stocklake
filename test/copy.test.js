@@ -100,6 +100,10 @@ test('tier counts in the README match the operations the node defines', () => {
 		'stock.getFilings',
 		'stock.getActivity',
 		'market.getEconomicCalendar',
+		// Composites: free, with Pro extras on top.
+		'stock.compare',
+		'stock.snapshot',
+		'portfolio.checkHoldings',
 	]);
 	const all = Object.keys(OPERATION_TOOLS);
 	assert.ok([...free].every((k) => all.includes(k)));

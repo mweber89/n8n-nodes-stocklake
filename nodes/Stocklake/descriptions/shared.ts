@@ -29,6 +29,10 @@ export const OPERATION_TOOLS: Record<string, string> = {
 	'news.getFeed': 'get_news_feed',
 	'signal.getMany': 'get_signals',
 	'watchlist.get': 'get_watchlist',
+	// Composite operations (version 2): the main tool each one is built on.
+	'stock.compare': 'get_stocks',
+	'stock.snapshot': 'get_stock',
+	'portfolio.checkHoldings': 'get_stocks',
 };
 
 /** Appends a link to the tool's reference page to every operation's description. */

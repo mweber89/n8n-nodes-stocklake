@@ -7,13 +7,12 @@ import type { INodeProperties } from 'n8n-workflow';
  * watchlist. The rules for cleaning and batching the list are in symbols.ts.
  */
 
-const notice: Omit<INodeProperties, 'displayOptions'> = {
-	displayName:
-		'Each ticker counts as one call toward your daily limit. Lists of more than 25 tickers are sent in several requests and the results keep the order of the list.',
-	name: 'symbolSourceNotice',
-	type: 'notice',
-	default: '',
-};
+const batchNotice =
+	'Each ticker counts as one call toward your daily limit. Lists of more than 25 tickers are sent in several requests and the results keep the order of the list.';
+
+function notice(text: string): Omit<INodeProperties, 'displayOptions'> {
+	return { displayName: text, name: 'symbolSourceNotice', type: 'notice', default: '' };
+}
 
 const fromInput: Omit<INodeProperties, 'displayOptions'> = {
 	displayName: 'Symbol',
@@ -30,11 +29,12 @@ function when(resource: string, operation: string, source: string[]) {
 	return { show: { resource: [resource], operation: [operation], symbolSource: source } };
 }
 
-function sourceFields(
+export function sourceFields(
 	resource: string,
 	operation: string,
 	options: INodeProperties['options'],
 	defaultSource: string,
+	noticeText: string = batchNotice,
 ): INodeProperties[] {
 	return [
 		{
@@ -47,7 +47,7 @@ function sourceFields(
 		},
 		{ ...fromInput, displayOptions: when(resource, operation, ['fromInput']) },
 		{
-			...notice,
+			...notice(noticeText),
 			displayOptions: when(resource, operation, ['fromInput', 'fromWatchlist', 'manual']),
 		},
 	];
@@ -58,12 +58,12 @@ const watchlistOption = {
 	value: 'fromWatchlist',
 	description: 'The symbols starred in your Stocklake account (requires Pro)',
 };
-const inputOption = {
+export const inputOption = {
 	name: 'From Input Items',
 	value: 'fromInput',
 	description: 'Collect a ticker from every input item',
 };
-const manualOption = {
+export const manualOption = {
 	name: 'Manual List',
 	value: 'manual',
 	description: 'Type the tickers, separated by commas',

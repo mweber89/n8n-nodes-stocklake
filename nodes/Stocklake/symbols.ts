@@ -87,7 +87,7 @@ export function buildSymbolList(sources: Array<{ value: unknown; item: number }>
 }
 
 /** What the API calls the same stock: "BRK.B" is answered as "BRK-B". */
-function lookupKeys(symbol: string): string[] {
+export function lookupKeys(symbol: string): string[] {
 	const upper = symbol.toUpperCase();
 	return [upper, upper.replace(/\./g, '-')];
 }

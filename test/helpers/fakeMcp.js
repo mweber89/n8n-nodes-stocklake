@@ -165,7 +165,8 @@ async function runNode(node, opts) {
 	const { fake, typeVersion, continueOnFail = false, apiKeyCredential = false } = opts;
 	const items = opts.items ?? (Array.isArray(opts.params) ? opts.params.map(() => ({ json: {} })) : [{ json: {} }]);
 	const hints = opts.hints ?? [];
-	const perItem = Array.isArray(opts.params) ? opts.params : items.map(() => opts.params);
+	// With no input items the parameters of item 0 still exist, as in n8n.
+	const perItem = Array.isArray(opts.params) ? opts.params : items.length > 0 ? items.map(() => opts.params) : [opts.params];
 	const resolved = perItem.map((p) => resolveParameters(node.description, p, typeVersion));
 
 	const context = {

@@ -52,6 +52,9 @@ const NEW_IN_V2 = [
 	['stock', 'getActivity'],
 	['stock', 'getAnalystTrend'],
 	['market', 'getEconomicCalendar'],
+	// The composite operations (test/composites.test.js covers what they do).
+	['stock', 'compare'],
+	['stock', 'snapshot'],
 ];
 
 function operationValues(version, resource) {
@@ -61,14 +64,27 @@ function operationValues(version, resource) {
 	return property.options.map((o) => o.value);
 }
 
-test('version 2 adds exactly the five new operations; version 1 does not have them', () => {
+test('version 2 adds exactly the new operations; version 1 does not have them', () => {
 	for (const [resource, operation] of NEW_IN_V2) {
 		assert.ok(operationValues(2, resource).includes(operation), `v2 ${resource}.${operation}`);
 		assert.ok(!operationValues(1, resource).includes(operation), `v1 ${resource}.${operation}`);
 	}
 	// Nothing else changed in the operation lists.
-	assert.equal(operationValues(2, 'stock').length, operationValues(1, 'stock').length + 4);
+	assert.equal(operationValues(2, 'stock').length, operationValues(1, 'stock').length + 6);
 	assert.equal(operationValues(2, 'market').length, operationValues(1, 'market').length + 1);
+});
+
+test('version 2 adds the Portfolio resource with Check Holdings; version 1 does not have it', () => {
+	const resource = (version) =>
+		new Stocklake().nodeVersions[version].description.properties.find((p) => p.name === 'resource');
+	assert.ok(resource(2).options.some((o) => o.value === 'portfolio'));
+	assert.ok(!resource(1).options.some((o) => o.value === 'portfolio'));
+	assert.deepEqual(operationValues(2, 'portfolio'), ['checkHoldings']);
+	// Every version 1 resource is still there, in the same order, ahead of the new one.
+	assert.deepEqual(
+		resource(2).options.slice(0, -1).map((o) => o.value),
+		resource(1).options.map((o) => o.value),
+	);
 });
 
 const LOADED_IN_V2 = new Set([
@@ -96,7 +112,7 @@ test('version 2 keeps every version 1 parameter unchanged', () => {
 	for (const p of descriptionSignature(v1).properties) {
 		const same = sigV2.get(key(p));
 		assert.ok(same, `v2 lost ${p.name}`);
-		if (p.name === 'operation') continue;
+		if (p.name === 'operation' || p.name === 'resource') continue;
 		// Filled from Stocklake in version 2 (test/loadOptions.test.js checks those, and that
 		// the fallback lists still hold everything version 1 offered) and the symbol pickers,
 		// whose list mode also offers the watchlist.

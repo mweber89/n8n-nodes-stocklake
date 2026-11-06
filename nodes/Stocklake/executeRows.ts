@@ -2,6 +2,7 @@ import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-wor
 import { NodeOperationError } from 'n8n-workflow';
 
 import { allowanceSeen, stocklakeApiRequest } from './GenericFunctions';
+import { COMPOSITE_OPERATIONS, executeComposite } from './executeComposite';
 import { buildToolCall } from './ToolMapping';
 import {
 	LARGE_BATCH_CALLS,
@@ -28,7 +29,7 @@ const MAX_PAGES = 200;
 
 /** The calls the API says are left today, as `_stocklake`, for the Request Option
  * "Include Remaining Calls". Left out when the API sent no figure. */
-function withAllowance(
+export function withAllowance(
 	context: IExecuteFunctions,
 	itemIndex: number,
 	items: INodeExecutionData[],
@@ -44,7 +45,7 @@ function withAllowance(
 
 /** What a failed item becomes under "Continue On Fail": the message in `json.error`, what to
  * do about it next to it, and the input item(s) it belongs to. */
-function errorItem(
+export function errorItem(
 	error: unknown,
 	pairedItem: INodeExecutionData['pairedItem'],
 ): INodeExecutionData {
@@ -73,7 +74,7 @@ interface Fetched {
  * Reads the rows of one list operation, paging when the tool pages and respecting
  * the tool's per-call caps. `wanted` is the user's Limit, or undefined for Return All.
  */
-async function fetchRows(
+export async function fetchRows(
 	this: IExecuteFunctions,
 	spec: ListSpec,
 	toolName: string,
@@ -178,14 +179,14 @@ async function fetchRows(
 }
 
 /** Where the symbols of one call came from, already cleaned. */
-interface SymbolPlan {
+export interface SymbolPlan {
 	source: SymbolSource;
 	list: SymbolList;
 }
 
 /** The list of symbols one item (or, for From input items / From my watchlist, the whole
  * run) works on. */
-function manualPlan(this: IExecuteFunctions, i: number): SymbolPlan {
+export function manualPlan(this: IExecuteFunctions, i: number): SymbolPlan {
 	const raw = this.getNodeParameter('symbols', i, '') as string;
 	// Nothing typed (or only commas) is an empty list, not a list with an empty ticker.
 	if (raw.replace(/[\s,]/g, '') === '') {
@@ -194,7 +195,7 @@ function manualPlan(this: IExecuteFunctions, i: number): SymbolPlan {
 	return { source: 'manual', list: buildSymbolList([{ value: raw, item: i }]) };
 }
 
-async function planFor(
+export async function planFor(
 	this: IExecuteFunctions,
 	source: SymbolSource,
 	items: INodeExecutionData[],
@@ -213,7 +214,7 @@ async function planFor(
 	return { source, list: buildSymbolList(entries.map((e) => ({ value: e.symbol, item: 0 }))) };
 }
 
-function invalidItems(plan: SymbolPlan): INodeExecutionData[] {
+export function invalidItems(plan: SymbolPlan): INodeExecutionData[] {
 	return plan.list.invalid.map((entry) => ({
 		json: { symbol: entry.input, valid: false, error: entry.reason },
 		pairedItem: { item: entry.item },
@@ -335,6 +336,9 @@ export async function executeRows(this: IExecuteFunctions): Promise<INodeExecuti
 	const returnData: INodeExecutionData[] = [];
 	const resource = this.getNodeParameter('resource', 0) as string;
 	const operation = this.getNodeParameter('operation', 0) as string;
+	if (COMPOSITE_OPERATIONS.has(`${resource}.${operation}`)) {
+		return await executeComposite.call(this, `${resource}.${operation}`);
+	}
 	const symbolOperation = SYMBOL_OPERATIONS[`${resource}.${operation}`];
 
 	// A run that works on the whole input at once (From input items, From my watchlist)

@@ -413,6 +413,13 @@ function callState(context: object): CallState {
 	return state;
 }
 
+/** Whether this execution already hit a limit that ends the run (the day's allowance, the
+ * guest limit): every further call would fail at once, so a caller that carries on after
+ * a failure should not. */
+export function runStopped(context: object): boolean {
+	return callState(context).stopped !== undefined;
+}
+
 /** The newest "calls left today" figure of this execution, as the API reported it. */
 export function allowanceSeen(context: object): {
 	remainingCalls?: number;
