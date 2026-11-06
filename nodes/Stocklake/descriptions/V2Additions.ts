@@ -107,12 +107,14 @@ const newFields: INodeProperties[] = [
 	// get_stock_filings
 	{
 		displayName: 'Limit',
-		name: 'limit',
+		// Not named `limit`: the n8n lint plugin forces any parameter with that name to
+		// default 50 with no maximum, but the tool's real default is 10 and its maximum 25.
+		name: 'maxResults',
 		type: 'number',
-		default: 50,
-		typeOptions: { minValue: 1 },
-		description: 'Max number of results to return',
-		hint: 'The API returns at most 25 filings, and at most 5 without Pro, whatever this is set to.',
+		default: 10,
+		typeOptions: { minValue: 1, maxValue: 25 },
+		description: 'Max number of filings to return (default 10, max 25)',
+		hint: 'Without Pro at most 5 filings are returned, whatever this is set to.',
 		displayOptions: { show: { resource: ['stock'], operation: ['getFilings'] } },
 	},
 
@@ -144,12 +146,11 @@ const newFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Limit',
-		name: 'limit',
+		name: 'maxResults',
 		type: 'number',
-		default: 50,
-		typeOptions: { minValue: 1 },
-		description: 'Max number of results to return',
-		hint: 'Items per page; the API returns at most 50. Use Page to read further.',
+		default: 25,
+		typeOptions: { minValue: 1, maxValue: 50 },
+		description: 'Items per page (default 25, max 50). Use Page to read further.',
 		displayOptions: { show: { resource: ['stock'], operation: ['getActivity'] } },
 	},
 	{
@@ -196,12 +197,12 @@ const newFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Limit',
-		name: 'limit',
+		name: 'maxResults',
 		type: 'number',
-		default: 50,
-		typeOptions: { minValue: 1 },
-		description: 'Max number of results to return',
-		hint: 'Applies to upcoming and recently released events separately. The API returns at most 20 each without Pro, 50 with Pro.',
+		default: 20,
+		typeOptions: { minValue: 1, maxValue: 50 },
+		description:
+			'Max events per group; upcoming and recently released are capped separately (default 20). Maximum 20 without Pro, 50 with Pro.',
 		displayOptions: { show: { resource: ['market'], operation: ['getEconomicCalendar'] } },
 	},
 	{

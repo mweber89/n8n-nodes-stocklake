@@ -127,6 +127,32 @@ test("the new parameters are dropdowns and multi-selects with the tool's exact v
 	}
 });
 
+test('the new parameters carry the live tools\' exact defaults and limits', () => {
+	// Written out by hand from the tool signatures in the Stocklake server.
+	const expected = {
+		'getFinancials.period': { default: 'annual' },
+		'getFinancials.statement': { default: 'all' },
+		'getFilings.maxResults': { default: 10, max: 25 },
+		'getActivity.days': { default: 90, max: 90 },
+		'getActivity.maxResults': { default: 25, max: 50 },
+		'getActivity.page': { default: 1 },
+		'getAnalystTrend.days': { default: 90, max: 365 },
+		'getEconomicCalendar.lookbackDays': { default: 2 },
+		'getEconomicCalendar.maxResults': { default: 20, max: 50 },
+		'getEconomicCalendar.majorOnly': { default: false },
+		'getEconomicCalendar.keyEventsOnly': { default: false },
+		'getEconomicCalendar.days': { default: 0, max: 14 },
+	};
+	const props = new Stocklake().nodeVersions[2].description.properties;
+	for (const [key, want] of Object.entries(expected)) {
+		const [operation, name] = key.split('.');
+		const p = props.find((x) => x.name === name && x.displayOptions?.show?.operation?.includes(operation));
+		assert.ok(p, key);
+		assert.deepEqual(p.default, want.default, `${key} default`);
+		if (want.max !== undefined) assert.equal(p.typeOptions.maxValue, want.max, `${key} max`);
+	}
+});
+
 test('the saved 0.1.1 workflow fixture covers every operation and is on node version 1', () => {
 	assert.ok(stocklakeNodes.length >= cases.length, 'one node per version-1 operation case');
 	for (const n of stocklakeNodes) assert.equal(n.typeVersion, 1, n.name);

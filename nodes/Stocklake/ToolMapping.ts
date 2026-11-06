@@ -85,7 +85,7 @@ export function buildToolCall(
 				toolName: 'get_stock_filings',
 				toolArguments: {
 					symbol: symbol('symbol'),
-					limit: this.getNodeParameter('limit', i, 50) as number,
+					limit: this.getNodeParameter('maxResults', i, 10) as number,
 				},
 			};
 		case 'stock.getActivity': {
@@ -98,7 +98,7 @@ export function buildToolCall(
 					symbol: symbol('symbol'),
 					types: types.length > 0 ? types : undefined,
 					days: this.getNodeParameter('days', i, 90) as number,
-					limit: this.getNodeParameter('limit', i, 50) as number,
+					limit: this.getNodeParameter('maxResults', i, 25) as number,
 					page: this.getNodeParameter('page', i, 1) as number,
 				}),
 			};
@@ -169,7 +169,7 @@ export function buildToolCall(
 					// 0 = "plan default": the tool picks 1 day (free) or 3 days (Pro) itself.
 					days: (this.getNodeParameter('days', i, 0) as number) || undefined,
 					lookback_days: this.getNodeParameter('lookbackDays', i, 2) as number,
-					limit: this.getNodeParameter('limit', i, 50) as number,
+					limit: this.getNodeParameter('maxResults', i, 20) as number,
 					major_only: this.getNodeParameter('majorOnly', i, false) as boolean,
 					key_events_only: this.getNodeParameter('keyEventsOnly', i, false) as boolean,
 				}),
