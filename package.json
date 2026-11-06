@@ -11,7 +11,8 @@
     "trading",
     "stock screener",
     "technical indicators",
-    "market data api"
+    "market data api",
+    "trigger"
   ],
   "license": "MIT",
   "homepage": "https://stocklake.dev",
@@ -45,7 +46,8 @@
       "dist/credentials/StocklakeOAuth2Api.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Stocklake/Stocklake.node.js"
+      "dist/nodes/Stocklake/Stocklake.node.js",
+      "dist/nodes/StocklakeTrigger/StocklakeTrigger.node.js"
     ]
   },
   "devDependencies": {

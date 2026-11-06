@@ -120,6 +120,33 @@ An example with a filtered Toolkit is in [`examples/ai-agent-toolkit.workflow.js
 
 **Options → Download as CSV** on the list operations (Get History, Get Indicator History, Screen Stocks, Compare, and the others that return rows) returns the rows as one binary CSV file (field `data`, change it with **Put CSV in Field**) instead of one item per row. The file has a header row, columns in the order they first appear, ISO dates as Stocklake sends them, a point as decimal separator, a UTF-8 byte order mark so Excel reads it correctly, and nested values as dotted columns (`indicators.rsi`). Text that a spreadsheet could run as a formula (starting with `=`, `+`, `-` or `@`, but not a number) gets a leading apostrophe. The file is named from the ticker, the operation and the day (`AAPL-history-2026-11-06.csv`); **CSV File Name** sets your own. The item holds `fileName`, `rowCount` and `columns` for the next node. With Compare, tickers that could not be read stay as separate items with their `error` next to the file. Without rows there is no file.
 
+## Stocklake Trigger
+
+A second node, **Stocklake Trigger**, starts a workflow when something happens. It checks Stocklake on a schedule (a polling trigger) and returns only what is new, once. The generic MCP Client node cannot start a workflow; this one can.
+
+| Event | Fires when | Reads | Plan |
+|---|---|---|---|
+| **New Signal** | Stocklake flags a signal, optionally only for one direction, above a score, or for chosen stocks | `get_signals` | Pro |
+| **Earnings Coming Up** | one of your stocks reports within N days (1-30). Once for each report date; a date that moves fires again | `get_earnings_calendar` | Free |
+| **New SEC Filing** | a new 8-K for one of your stocks, with title, headline and link (summaries on Pro) | `get_stock_filings` | Free |
+| **Insider Purchase** | an insider buys shares worth at least an amount (shares times price) | `get_insider_activity` | Free |
+| **RSI Crossing** | a stock's RSI goes from one side of a level to the other, up, down or either way | `get_stocks` | Free |
+| **Price Move** | a stock is up or down by more than a percentage on the day, once per stock, day and direction | `get_stocks` | Free |
+
+Every item has an `event` field (`signal.new`, `earnings.upcoming`, `filing.new`, `insider.purchase`, `rsi.crossed`, `price.moved`) next to the data of the event. An RSI item carries `rsi`, `previous_rsi`, `threshold` and `direction`; a price item `change_pct`, `prev_close`, `direction` and `threshold_pct`; an earnings item `days_until`.
+
+**Symbols.** Signals look at every stock unless you give a list; the other events take a **Manual List** or **My Watchlist** (Pro). Filings and insider purchases are read one request per stock, so they take at most 25 stocks; the others up to 100.
+
+**Fires once.** The node remembers what it has sent in the workflow's static data (the ids of the events, at most 500 to 2,000 depending on the list with the oldest dropped first, or the last RSI value per stock). The first check after you activate the workflow, or after you change the settings that decide what is asked for, only records the situation and starts nothing: a stock that is already above the RSI level, or a filing that is already there, is not news. Turn on **Options → Fire on Existing Items** to have that first check send what exists. A stock you add to the list later is recorded first and announced from its next event. n8n saves the static data when the node fires and when the workflow is activated, so after a restart the node may announce an RSI crossing again.
+
+**Crossing, not "is above".** An RSI of exactly the level counts as above. The node compares each stock with its value at the previous check, so a stock that stays above 70 fires once, when it gets there, not at every check. Checks run on the schedule, so a crossing that reverses between two checks is not seen. The RSI is recalculated a few times a day: checking more often finds nothing new.
+
+**Test mode.** **Fetch Test Event** returns the latest event that matches right now (the newest signal or filing, the next report, the biggest move, a stock on the chosen side of the RSI level) without touching the saved state, so you can build the rest of the workflow. If nothing matches, the error says what to change to get a sample.
+
+**Calls and schedule.** Every check uses calls of your daily allowance: a list tool counts one call per row it returns and every stock of a check counts at least one. n8n's **Poll Times** start at every minute, so the node has its own **Minimum Minutes Between Checks**, 60 by default: it only calls Stocklake when that much time has passed since its last check, whatever the Poll Times are. Set both to check more often. **Estimated Calls per Day** shows the upper bound for the event, the stocks and the interval (a watchlist is one call per stock on it per check, and is read at most once an hour). Under 15 minutes the node warns. A check that fails (Pro event with a free key, a used-up allowance) waits for the interval and shows the error in the execution.
+
+`examples/earnings-and-rsi-alerts.workflow.json` has two triggers (earnings in the next week, RSI above 70) that format a message for Slack or email.
+
 ## Symbols from earlier steps (version 2)
 
 Get Many and the Earnings Calendar have a **Symbol Source**:

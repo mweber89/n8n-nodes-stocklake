@@ -101,6 +101,12 @@ Stock → Compare, Stock → Snapshot and Portfolio → Check Holdings (version 
 
 To check an agent end to end, run `./scripts/dev-n8n.sh`, build a workflow like `examples/ai-agent-toolkit.workflow.json` with a chat model credential, ask a few questions and look at the tool calls in the agent's execution (Return Intermediate Steps). The unit tests (`test/tools.test.js`) cover the descriptions, the `$fromAI()` schema, the filter and every operation as a tool, but not how a model chooses.
 
+## Stocklake Trigger
+
+`nodes/StocklakeTrigger/` is a separate node (`polling: true`, version 1), registered in `package.json`. `events.ts` turns the responses of the API into candidate events and holds the RSI crossing and price move rules; `state.ts` is what the node keeps in the workflow static data (`pickFresh` decides what is new, `remember`/`capList` keep it small); `estimate.ts` and `loadOptions.ts` are the calls-a-day estimate, shown in a dropdown that n8n reloads when a field changes (a notice cannot show a figure); `poll.ts` runs one check: the minimum interval, the symbols (manual or the watchlist, cached an hour), the reads and the state. The request code of the other node is reused through a Proxy over the poll context (`requestContext`): it must stay the real context underneath, since n8n's credential helper reads the credential through `this`. Tests are in `test/trigger.test.js` with `test/helpers/fakePoll.js` (a poll context with static data that outlives a check, and `poll.clock.now` to move time).
+
+Rules to keep: a new event needs an `EVENT_NAMES` and an `EVENT_TOOLS` entry, a signature entry in `signatureOf` when a setting changes what the API is asked for (a change then starts a new baseline), a case in `observe`, `latestMatch` and `NOTHING_TO_SHOW`; ids must be stable and rows that do not match a filter are still remembered (so widening the filter does not announce old rows). n8n saves static data only when a poll returns data and at activation, so nothing may depend on state surviving a restart between two empty checks. To try it: `./scripts/dev-n8n.sh`, add a Stocklake Trigger to a workflow, **Fetch Test Event**, then activate it with a short interval (and **Fire on Existing Items**) and watch the executions.
+
 ## Dropdowns loaded from Stocklake
 
 `nodes/Stocklake/loadOptions.ts` holds the `methods.loadOptions` functions and the

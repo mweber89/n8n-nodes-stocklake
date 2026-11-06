@@ -1,0 +1,159 @@
+{
+  "name": "Stocklake - Earnings and RSI alerts",
+  "nodes": [
+    {
+      "id": "b1c2d3e4-0001-4000-8000-000000000001",
+      "name": "Earnings Coming Up",
+      "type": "n8n-nodes-stocklake.stocklakeTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "event": "earnings",
+        "symbolSource": "manual",
+        "symbols": "AAPL, MSFT, NVDA, GOOGL, AMZN",
+        "daysAhead": 7,
+        "minutesBetweenChecks": 360
+      }
+    },
+    {
+      "id": "b1c2d3e4-0002-4000-8000-000000000002",
+      "name": "RSI Above 70",
+      "type": "n8n-nodes-stocklake.stocklakeTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "parameters": {
+        "event": "rsi",
+        "symbolSource": "manual",
+        "symbols": "AAPL, MSFT, NVDA, TSLA",
+        "rsiThreshold": 70,
+        "rsiDirection": "up",
+        "minutesBetweenChecks": 120
+      }
+    },
+    {
+      "id": "b1c2d3e4-0003-4000-8000-000000000003",
+      "name": "Earnings Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m1",
+              "name": "message",
+              "type": "string",
+              "value": "={{ $json.symbol }} reports earnings in {{ $json.days_until }} days ({{ $json.earnings_date.slice(0, 10) }})"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b1c2d3e4-0004-4000-8000-000000000004",
+      "name": "RSI Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        240
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m2",
+              "name": "message",
+              "type": "string",
+              "value": "={{ $json.symbol }} RSI crossed above {{ $json.threshold }}: {{ $json.previous_rsi }} to {{ $json.rsi }} (price {{ $json.price }})"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b1c2d3e4-0005-4000-8000-000000000005",
+      "name": "Send This to Slack or Email",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        120
+      ],
+      "notes": "Wire this to Slack, Send Email, Telegram, etc. The field `message` has the text."
+    },
+    {
+      "id": "b1c2d3e4-0006-4000-8000-000000000006",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        -220
+      ],
+      "parameters": {
+        "width": 560,
+        "height": 180,
+        "content": "## Stocklake Trigger: two alerts\n\nEach trigger fires **once per event**. The first time you activate the workflow it only records what exists now and starts nothing (turn on *Fire on Existing Items* to change that). Use **Fetch Test Event** to see the latest matching event while you build.\n\nEvery check uses calls of your daily allowance: the *Estimated Calls per Day* field shows how many. Here the earnings trigger checks every 6 hours and the RSI trigger every 2 hours. Without a credential the node runs as a guest with 25 calls a day."
+      }
+    }
+  ],
+  "connections": {
+    "Earnings Coming Up": {
+      "main": [
+        [
+          {
+            "node": "Earnings Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSI Above 70": {
+      "main": [
+        [
+          {
+            "node": "RSI Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Earnings Message": {
+      "main": [
+        [
+          {
+            "node": "Send This to Slack or Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSI Message": {
+      "main": [
+        [
+          {
+            "node": "Send This to Slack or Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}
