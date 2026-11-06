@@ -22,19 +22,19 @@ Credentials are **optional**. Without one, the node calls Stocklake as an unauth
 
 | Tier  | Calls/day | Operations |
 |-------|-----------|------------|
-| Guest (no credential) | 25 | Free operations: Stock: Get / Get Many / Get History / Get News / Get Insider Activity · Market: Get Movers / Get Pulse · Earnings: Get Calendar · Screener: Screen Stocks |
+| Guest (no credential) | 25 | Free operations: Stock: Get / Get Many / Get History / Get News / Get Insider Activity / Get Financials / Get Filings / Get Activity · Market: Get Movers / Get Pulse / Get Economic Calendar · Earnings: Get Calendar · Screener: Screen Stocks |
 | Free  | 200 | Same operations as guest |
-| Pro   | 5000 | All of the above (with extra fields on some, for example the AI read on Get Insider Activity), plus: Stock: Get Research / Get Indicator History · Market: Get Assessment · Sector: Get Intelligence · Earnings: Get Intelligence · News: Get Feed · Signal: Get Many · Watchlist: Get |
+| Pro   | 5000 | All of the above (with more on some: the AI read on Get Insider Activity, five years and quarterly statements on Get Financials, summaries on Get Filings, the content of each Get Activity item, a longer Get Economic Calendar window), plus: Stock: Get Research / Get Indicator History / Get Analyst Trend · Market: Get Assessment · Sector: Get Intelligence · Earnings: Get Intelligence · News: Get Feed · Signal: Get Many · Watchlist: Get |
 
 A Pro-only operation called without a Pro key returns a clear error explaining what's needed and where to upgrade — the node doesn't hide these operations, since Stocklake's own philosophy is "data is free, intelligence is Pro," and it's useful to see what's available even before upgrading.
 
 ## Resources & operations
 
-The Stocklake API has 22 tools: 13 available without Pro and 9 that need it. This node exposes 17 operations so far (9 free, 8 Pro), grouped into 8 resources. Each one links to its reference page:
+The Stocklake API has 22 tools: 13 available without Pro and 9 that need it. Version 2 of this node exposes all 22 (13 free, 9 Pro), grouped into 8 resources; version 1 has the original 17. Each operation links to its reference page:
 
-- **Stock** ([reference](https://stocklake.dev/docs/tools#get_stock)) — Get, Get Many (batch, up to 25 symbols), Get History, Get News, Get Research, Get Indicator History, Get Insider Activity
+- **Stock** ([reference](https://stocklake.dev/docs/tools#get_stock)) — Get, Get Many (batch, up to 25 symbols), Get History, Get News, Get Research, Get Indicator History, Get Insider Activity, plus new in version 2: Get Financials ([reference](https://stocklake.dev/docs/tools#get_stock_financials); balance sheet, income statement and cash flow, latest year free, 5 years and quarterly on Pro), Get Filings ([reference](https://stocklake.dev/docs/tools#get_stock_filings); SEC 8-K filings, summaries on Pro), Get Activity ([reference](https://stocklake.dev/docs/tools#get_stock_activity); one timeline of news, filings, insider trades, earnings, analyst changes and setups), Get Analyst Trend ([reference](https://stocklake.dev/docs/tools#get_analyst_trend); Pro)
 - **Screener** ([reference](https://stocklake.dev/docs/tools#get_screener)) — Screen Stocks (filter/rank the universe by sector, RSI, market cap, analyst rating, AI score, and more)
-- **Market** ([reference](https://stocklake.dev/docs/tools#get_market_pulse)) — Get Pulse (VIX, Fear & Greed, breadth), Get Movers, Get Assessment (AI macro regime)
+- **Market** ([reference](https://stocklake.dev/docs/tools#get_market_pulse)) — Get Pulse (VIX, Fear & Greed, breadth), Get Movers, Get Assessment (AI macro regime), and new in version 2: Get Economic Calendar ([reference](https://stocklake.dev/docs/tools#get_economic_calendar); rate decisions, CPI, GDP, payrolls)
 - **Sector** ([reference](https://stocklake.dev/docs/tools#get_sector_intelligence)) — Get Intelligence (one sector, or all 11 as a rotation view)
 - **Earnings** ([reference](https://stocklake.dev/docs/tools#get_earnings_calendar)) — Get Calendar, Get Intelligence (AI-scored upcoming earnings)
 - **News** ([reference](https://stocklake.dev/docs/tools#get_news_feed)) — Get Feed (market-wide AI-flagged news briefing)

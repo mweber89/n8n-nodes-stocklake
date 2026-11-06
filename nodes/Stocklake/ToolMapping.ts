@@ -71,6 +71,47 @@ export function buildToolCall(
 				toolArguments: { symbol: symbol('symbol') },
 			};
 
+		case 'stock.getFinancials':
+			return {
+				toolName: 'get_stock_financials',
+				toolArguments: {
+					symbol: symbol('symbol'),
+					period: this.getNodeParameter('period', i, 'annual') as string,
+					statement: this.getNodeParameter('statement', i, 'all') as string,
+				},
+			};
+		case 'stock.getFilings':
+			return {
+				toolName: 'get_stock_filings',
+				toolArguments: {
+					symbol: symbol('symbol'),
+					limit: this.getNodeParameter('limit', i, 50) as number,
+				},
+			};
+		case 'stock.getActivity': {
+			// An empty multi-select means "all types", which the tool expresses by
+			// leaving `types` out, so it is only sent when something is picked.
+			const types = this.getNodeParameter('types', i, []) as string[];
+			return {
+				toolName: 'get_stock_activity',
+				toolArguments: cleanParams({
+					symbol: symbol('symbol'),
+					types: types.length > 0 ? types : undefined,
+					days: this.getNodeParameter('days', i, 90) as number,
+					limit: this.getNodeParameter('limit', i, 50) as number,
+					page: this.getNodeParameter('page', i, 1) as number,
+				}),
+			};
+		}
+		case 'stock.getAnalystTrend':
+			return {
+				toolName: 'get_analyst_trend',
+				toolArguments: {
+					symbol: symbol('symbol'),
+					days: this.getNodeParameter('days', i, 90) as number,
+				},
+			};
+
 		case 'screener.screen': {
 			// additionalFields' own property names are camelCase (n8n convention) but
 			// get_screener's real params are snake_case — a previous version of this
@@ -119,6 +160,19 @@ export function buildToolCall(
 				toolArguments: {
 					history_count: this.getNodeParameter('historyCount', i, 0) as number,
 				},
+			};
+
+		case 'market.getEconomicCalendar':
+			return {
+				toolName: 'get_economic_calendar',
+				toolArguments: cleanParams({
+					// 0 = "plan default": the tool picks 1 day (free) or 3 days (Pro) itself.
+					days: (this.getNodeParameter('days', i, 0) as number) || undefined,
+					lookback_days: this.getNodeParameter('lookbackDays', i, 2) as number,
+					limit: this.getNodeParameter('limit', i, 50) as number,
+					major_only: this.getNodeParameter('majorOnly', i, false) as boolean,
+					key_events_only: this.getNodeParameter('keyEventsOnly', i, false) as boolean,
+				}),
 			};
 
 		case 'sector.getIntelligence':

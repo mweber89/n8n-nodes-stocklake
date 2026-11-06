@@ -125,7 +125,13 @@ const cases = [
 	},
 	{
 		name: 'market.getMovers',
-		params: { resource: 'market', operation: 'getMovers', category: 'gainers', limit: 5, minMarketCapB: 2 },
+		params: {
+			resource: 'market',
+			operation: 'getMovers',
+			category: 'gainers',
+			limit: 5,
+			minMarketCapB: 2,
+		},
 		tool: 'get_market_movers',
 		args: { category: 'gainers', limit: 5, min_market_cap_b: 2 },
 		response: { gainers: [{ symbol: 'UP', change_pct: 9 }] },
@@ -201,4 +207,105 @@ const cases = [
 	},
 ];
 
-module.exports = { cases, rl };
+/** Operations added in node version 2. Version 1 does not have them. */
+const v2Cases = [
+	{
+		name: 'stock.getFinancials (defaults)',
+		params: { resource: 'stock', operation: 'getFinancials', symbol: rl('AAPL') },
+		tool: 'get_stock_financials',
+		args: { symbol: 'AAPL', period: 'annual', statement: 'all' },
+		response: {
+			symbol: 'AAPL',
+			period: 'annual',
+			statement: 'all',
+			annual: { periods: ['2026-09-30'] },
+		},
+	},
+	{
+		name: 'stock.getFinancials (period and statement set)',
+		params: {
+			resource: 'stock',
+			operation: 'getFinancials',
+			symbol: rl('MSFT'),
+			period: 'quarterly',
+			statement: 'income_stmt',
+		},
+		tool: 'get_stock_financials',
+		args: { symbol: 'MSFT', period: 'quarterly', statement: 'income_stmt' },
+		response: { symbol: 'MSFT', period: 'quarterly', quarterly: { periods: ['2026-09-30'] } },
+	},
+	{
+		name: 'stock.getFilings (default limit)',
+		params: { resource: 'stock', operation: 'getFilings', symbol: rl('AAPL') },
+		tool: 'get_stock_filings',
+		args: { symbol: 'AAPL', limit: 50 },
+		response: { symbol: 'AAPL', count: 1, items: [{ accession: '0000320193-26-000024' }] },
+	},
+	{
+		name: 'stock.getFilings (limit set)',
+		params: { resource: 'stock', operation: 'getFilings', symbol: rl('AAPL'), limit: 5 },
+		tool: 'get_stock_filings',
+		args: { symbol: 'AAPL', limit: 5 },
+		response: { symbol: 'AAPL', count: 0, items: [] },
+	},
+	{
+		name: 'stock.getActivity (defaults: no types sent = all types)',
+		params: { resource: 'stock', operation: 'getActivity', symbol: rl('NVDA') },
+		tool: 'get_stock_activity',
+		args: { symbol: 'NVDA', days: 90, limit: 50, page: 1 },
+		response: { symbol: 'NVDA', total: 1, pages: 1, items: [{ type: 'news' }] },
+	},
+	{
+		name: 'stock.getActivity (types, days, limit and page set)',
+		params: {
+			resource: 'stock',
+			operation: 'getActivity',
+			symbol: rl('NVDA'),
+			types: ['news', 'filing'],
+			days: 30,
+			limit: 10,
+			page: 2,
+		},
+		tool: 'get_stock_activity',
+		args: { symbol: 'NVDA', types: ['news', 'filing'], days: 30, limit: 10, page: 2 },
+		response: { symbol: 'NVDA', total: 0, pages: 0, items: [] },
+	},
+	{
+		name: 'stock.getAnalystTrend (default days)',
+		params: { resource: 'stock', operation: 'getAnalystTrend', symbol: rl('AAPL') },
+		tool: 'get_analyst_trend',
+		args: { symbol: 'AAPL', days: 90 },
+		response: { symbol: 'AAPL', snapshots: [{ date: '2026-11-05', analyst_rating: 'buy' }] },
+	},
+	{
+		name: 'stock.getAnalystTrend (days set)',
+		params: { resource: 'stock', operation: 'getAnalystTrend', symbol: rl('AAPL'), days: 365 },
+		tool: 'get_analyst_trend',
+		args: { symbol: 'AAPL', days: 365 },
+		response: { symbol: 'AAPL', snapshots: [] },
+	},
+	{
+		name: 'market.getEconomicCalendar (defaults: days left to the plan)',
+		params: { resource: 'market', operation: 'getEconomicCalendar' },
+		tool: 'get_economic_calendar',
+		args: { lookback_days: 2, limit: 50, major_only: false, key_events_only: false },
+		response: { released_recent: [], upcoming: [] },
+	},
+	{
+		name: 'market.getEconomicCalendar (everything set, snake_case on the wire)',
+		params: {
+			resource: 'market',
+			operation: 'getEconomicCalendar',
+			days: 3,
+			lookbackDays: 5,
+			limit: 10,
+			majorOnly: true,
+			keyEventsOnly: true,
+		},
+		tool: 'get_economic_calendar',
+		args: { days: 3, lookback_days: 5, limit: 10, major_only: true, key_events_only: true },
+		response: { released_recent: [{ event: 'CPI' }], upcoming: [] },
+	},
+];
+
+module.exports = { cases, v2Cases, rl };

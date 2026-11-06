@@ -57,6 +57,21 @@ n8n does.
 delayed about 15 minutes) and on any data-provider or model name in files that
 ship.
 
+## Checking against the live API
+
+`scripts/live-check.js` runs the version-2 operations through the node's real
+`execute()` against api.stocklake.dev as a guest, and with a free and a Pro key if
+you pass them:
+
+```bash
+npm run build
+STOCKLAKE_FREE_KEY=... STOCKLAKE_PRO_KEY=... node scripts/live-check.js
+```
+
+Keys come from the environment only and are never printed or stored. It spends
+the keys' daily quota, so it is not part of `npm test`. A Pro-only operation
+refused for guest or free is reported as `denied`, which is the expected answer.
+
 ## Trying the node in a local n8n
 
 The unit tests do not start n8n. For a manual end-to-end check:

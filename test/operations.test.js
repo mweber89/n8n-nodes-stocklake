@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 
 const { Stocklake } = require('../dist/nodes/Stocklake/Stocklake.node');
 const { createFakeMcp, loadNode, runNode } = require('./helpers/fakeMcp');
-const { cases } = require('./fixtures/operations');
+const { cases, v2Cases } = require('./fixtures/operations');
 
 const MCP_URL = 'https://api.stocklake.dev/mcp';
 
@@ -15,7 +15,7 @@ const MCP_URL = 'https://api.stocklake.dev/mcp';
  * mapped to output items. Run for each node version that exists.
  */
 for (const version of [1, 2]) {
-	for (const c of cases) {
+	for (const c of version === 1 ? cases : [...cases, ...v2Cases]) {
 		test(`v${version} ${c.name}: calls ${c.tool} with the exact arguments`, async () => {
 			const fake = createFakeMcp({ [c.tool]: c.response });
 			const node = loadNode(Stocklake, version);

@@ -7,6 +7,7 @@ import type {
 } from 'n8n-workflow';
 
 import { searchSymbols } from '../GenericFunctions';
+import { v2Properties } from '../descriptions/V2Additions';
 import { versionDescription } from '../descriptions/NodeDescription';
 import { executeToolCallPerItem } from '../execute';
 
@@ -17,7 +18,7 @@ export class StocklakeV2 implements INodeType {
 	description: INodeTypeDescription;
 
 	constructor(baseDescription: INodeTypeBaseDescription) {
-		this.description = versionDescription(baseDescription, 2);
+		this.description = versionDescription(baseDescription, 2, v2Properties);
 	}
 
 	methods = { listSearch: { searchSymbols } };

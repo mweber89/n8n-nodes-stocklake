@@ -7,7 +7,7 @@ const path = require('node:path');
 
 const { Stocklake } = require('../dist/nodes/Stocklake/Stocklake.node');
 const { OPERATION_TOOLS, DOCS_TOOLS_URL } = require('../dist/nodes/Stocklake/descriptions/shared');
-const { cases } = require('./fixtures/operations');
+const { cases, v2Cases } = require('./fixtures/operations');
 
 const root = path.join(__dirname, '..');
 
@@ -33,7 +33,10 @@ const publicFiles = [
 
 test('no wording that claims current quotes (they are delayed about 15 minutes)', () => {
 	// Built from pieces so this file does not itself contain the words it forbids.
-	const forbidden = new RegExp(['real[- ]?' + 'time', 'live' + ' data', '\\b' + 'live' + '\\b'].join('|'), 'i');
+	const forbidden = new RegExp(
+		['real[- ]?' + 'time', 'live' + ' data', '\\b' + 'live' + '\\b'].join('|'),
+		'i',
+	);
 	for (const file of publicFiles) {
 		const text = fs.readFileSync(path.join(root, file), 'utf8');
 		const hit = text.split('\n').findIndex((line) => forbidden.test(line));
@@ -53,7 +56,9 @@ test('no data-provider or internal model names anywhere', () => {
 
 const operationOptions = new Stocklake().nodeVersions[2].description.properties
 	.filter((p) => p.name === 'operation')
-	.flatMap((p) => p.displayOptions.show.resource.map((resource) => ({ resource, options: p.options })));
+	.flatMap((p) =>
+		p.displayOptions.show.resource.map((resource) => ({ resource, options: p.options })),
+	);
 
 test('every operation has a docs link to its own tool in its description', () => {
 	let count = 0;
@@ -72,7 +77,7 @@ test('every operation has a docs link to its own tool in its description', () =>
 });
 
 test('the docs-link table agrees with the tool each operation really calls', () => {
-	for (const c of cases) {
+	for (const c of [...cases, ...v2Cases]) {
 		const key = `${c.params.resource}.${c.params.operation}`;
 		if (OPERATION_TOOLS[key]) assert.equal(OPERATION_TOOLS[key], c.tool, key);
 	}
@@ -91,6 +96,10 @@ test('tier counts in the README match the operations the node defines', () => {
 		'market.getPulse',
 		'market.getMovers',
 		'earnings.getCalendar',
+		'stock.getFinancials',
+		'stock.getFilings',
+		'stock.getActivity',
+		'market.getEconomicCalendar',
 	]);
 	const all = Object.keys(OPERATION_TOOLS);
 	assert.ok([...free].every((k) => all.includes(k)));
@@ -98,8 +107,8 @@ test('tier counts in the README match the operations the node defines', () => {
 
 	const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 	assert.ok(
-		readme.includes(`exposes ${all.length} operations so far (${free.size} free, ${pro} Pro)`),
-		`README must say "exposes ${all.length} operations so far (${free.size} free, ${pro} Pro)"`,
+		readme.includes(`exposes all ${all.length} (${free.size} free, ${pro} Pro)`),
+		`README must say "exposes all ${all.length} (${free.size} free, ${pro} Pro)"`,
 	);
 });
 

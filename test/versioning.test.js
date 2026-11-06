@@ -31,7 +31,10 @@ test('the node is versioned: versions 1 and 2, version 2 is the default for new 
 test('both versions share the node identity n8n stores in workflows', () => {
 	const node = new Stocklake();
 	assert.equal(node.description.name, 'stocklake');
-	assert.deepEqual(node.nodeVersions[1].description.credentials, node.nodeVersions[2].description.credentials);
+	assert.deepEqual(
+		node.nodeVersions[1].description.credentials,
+		node.nodeVersions[2].description.credentials,
+	);
 });
 
 /**
@@ -43,8 +46,89 @@ test('both versions share the node identity n8n stores in workflows', () => {
  */
 const stocklakeNodes = workflow.nodes.filter((n) => n.type === 'n8n-nodes-stocklake.stocklake');
 
+const NEW_IN_V2 = [
+	['stock', 'getFinancials'],
+	['stock', 'getFilings'],
+	['stock', 'getActivity'],
+	['stock', 'getAnalystTrend'],
+	['market', 'getEconomicCalendar'],
+];
+
+function operationValues(version, resource) {
+	const property = new Stocklake().nodeVersions[version].description.properties.find(
+		(p) => p.name === 'operation' && p.displayOptions.show.resource[0] === resource,
+	);
+	return property.options.map((o) => o.value);
+}
+
+test('version 2 adds exactly the five new operations; version 1 does not have them', () => {
+	for (const [resource, operation] of NEW_IN_V2) {
+		assert.ok(operationValues(2, resource).includes(operation), `v2 ${resource}.${operation}`);
+		assert.ok(!operationValues(1, resource).includes(operation), `v1 ${resource}.${operation}`);
+	}
+	// Nothing else changed in the operation lists.
+	assert.equal(operationValues(2, 'stock').length, operationValues(1, 'stock').length + 4);
+	assert.equal(operationValues(2, 'market').length, operationValues(1, 'market').length + 1);
+});
+
+test('version 2 keeps every version 1 parameter unchanged', () => {
+	const v1 = new Stocklake().nodeVersions[1].description;
+	const v2 = new Stocklake().nodeVersions[2].description;
+	const sigV2 = new Map(
+		descriptionSignature(v2).properties.map((p) => [JSON.stringify([p.name, p.displayOptions]), p]),
+	);
+	for (const p of descriptionSignature(v1).properties) {
+		const same = sigV2.get(JSON.stringify([p.name, p.displayOptions]));
+		assert.ok(same, `v2 lost ${p.name}`);
+		if (p.name !== 'operation') assert.deepEqual(same, p, p.name);
+	}
+});
+
+test('the new operations list is alphabetical (n8n convention)', () => {
+	for (const resource of ['stock', 'market']) {
+		const property = new Stocklake().nodeVersions[2].description.properties.find(
+			(p) => p.name === 'operation' && p.displayOptions.show.resource[0] === resource,
+		);
+		const names = property.options.map((o) => o.name);
+		assert.deepEqual(
+			names,
+			[...names].sort((a, b) => a.localeCompare(b)),
+		);
+	}
+});
+
+test("the new parameters are dropdowns and multi-selects with the tool's exact values", () => {
+	const props = new Stocklake().nodeVersions[2].description.properties;
+	const find = (name, operation) =>
+		props.find((p) => p.name === name && p.displayOptions?.show?.operation?.includes(operation));
+	const values = (p) => p.options.map((o) => o.value).sort();
+
+	assert.equal(find('period', 'getFinancials').type, 'options');
+	assert.deepEqual(values(find('period', 'getFinancials')), ['annual', 'both', 'quarterly']);
+	assert.equal(find('statement', 'getFinancials').type, 'options');
+	assert.deepEqual(values(find('statement', 'getFinancials')), [
+		'all',
+		'balance_sheet',
+		'cash_flow',
+		'income_stmt',
+	]);
+	assert.equal(find('types', 'getActivity').type, 'multiOptions');
+	assert.deepEqual(values(find('types', 'getActivity')), [
+		'analyst',
+		'earnings',
+		'filing',
+		'insider',
+		'news',
+		'setup',
+	]);
+	for (const operation of ['getFinancials', 'getFilings', 'getActivity', 'getAnalystTrend']) {
+		assert.equal(find('symbol', operation).type, 'resourceLocator', operation);
+		assert.equal(find('symbol', operation).modes[0].typeOptions.searchListMethod, 'searchSymbols');
+	}
+});
+
 test('the saved 0.1.1 workflow fixture covers every operation and is on node version 1', () => {
-	assert.ok(stocklakeNodes.length >= cases.length);
+	assert.ok(stocklakeNodes.length >= cases.length, 'one node per version-1 operation case');
 	for (const n of stocklakeNodes) assert.equal(n.typeVersion, 1, n.name);
 });
 
