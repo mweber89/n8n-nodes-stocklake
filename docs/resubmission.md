@@ -117,7 +117,9 @@ table.
 - Source: <https://github.com/mweber89/n8n-nodes-stocklake>
 - Documentation: <https://stocklake.dev/n8n>
 - Templates: [`templates/`](../templates)
-- Demo video: add the link here before submitting.
+- Demo video: <https://drive.google.com/file/d/1g_7a1zXe-JI65sHCZaW5QPqww68WdUR_/view?usp=sharing>
+  (recorded 2026-09-02 on 0.1.1; replace with a 2.0 recording before submitting, or say in
+  the portal which version it shows)
 
 ## Before submitting
 
