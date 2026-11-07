@@ -61,8 +61,13 @@ The documentation page is in the Stocklake site repository (`mcpserver/external/
 - **CSV (#8), 2026-11-07**: a file written by the built `csv.js` parsed cleanly with a
   standard CSV reader: byte order mark, header row, ISO dates, quoting, and a cell starting
   with `=` escaped. Not opened in Excel or Google Sheets by hand.
-- **Live checks for #5 and #9**: running separately; results go to
-  `docs/live-checks-2026-11-07.md` and the two issues.
+- **Live checks for #5 and #9, 2026-11-07** (751d1f7): all passed on n8n 2.46.6 with the
+  2.0.0 build. Report and the 29 workflows used: `docs/live-checks-2026-11-07.md`. Calls used:
+  228 Pro, 50 Free. Findings: Compare is capped at 25 tickers by design (batching is for
+  Get Many); Insider Purchase is a free event (Free reads the 5 newest filings per stock,
+  Pro 50); a Free key on a Pro event fails at activation, where n8n retries five times
+  (5 Free calls per activation). `docs/resubmission.md` "What was checked" was cut down to
+  what that run saw.
 
 ## Next time
 
@@ -81,5 +86,9 @@ The documentation page is in the Stocklake site repository (`mcpserver/external/
 - n8n's decision on the resubmission. If they write back, answer with the text in
   `docs/resubmission.md`.
 - A demo video of 2.0 (the existing one, recorded 2026-09-02, shows 0.1.1).
-- Live checks for #5 and #9.
+- Get Many drops a ticker of valid shape that Stocklake does not know: it is billed and
+  shows only in `_meta.missing`, while Compare returns it as an item. Decide whether
+  2.0.1 returns it as an item too (a test pins today's behaviour).
+- Unreleased on main since 2.0.0: the Insider Purchase option text and README corrections
+  (see CHANGELOG, Unreleased). They reach npm with the next version.
 - Revoke the npm tokens used on 2026-11-07.

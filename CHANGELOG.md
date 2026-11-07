@@ -4,6 +4,15 @@ All notable changes to `n8n-nodes-stocklake`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Stocklake Trigger: the Insider Purchase option says it works on a free key (Free reads
+  the 5 newest filings per stock, Pro 50).
+- README: Insider Purchase is a free event; a free key on a Pro event fails when the
+  workflow is activated, not in an execution.
+
 ## [2.0.0] - 2026-11-07
 
 The node is rebuilt to behave like a native n8n node. Workflows saved with 0.1.x keep
