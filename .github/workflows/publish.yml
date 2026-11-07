@@ -42,6 +42,12 @@ jobs:
         # a pass/fail report but always exits 0 (confirmed empirically —
         # don't rely on its exit code), so this step is deliberately
         # informational, not a workflow-failing gate; read the log.
+        # Waits until the registry serves the version just published (a fixed
+        # sleep once scanned the previous version), then scans that version.
         run: |
-          sleep 20
-          npx --yes @n8n/scan-community-package n8n-nodes-stocklake
+          v=$(node -p "require('./package.json').version")
+          for i in $(seq 1 40); do
+            [ "$(npm view n8n-nodes-stocklake@$v version 2>/dev/null)" = "$v" ] && break
+            sleep 6
+          done
+          npx --yes @n8n/scan-community-package "n8n-nodes-stocklake@$v"

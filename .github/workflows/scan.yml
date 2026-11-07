@@ -1,0 +1,25 @@
+name: Scan published package
+
+# Runs n8n's community-package scanner against a version already on npm,
+# without publishing. Read the log: the scanner always exits 0.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to scan (empty = latest)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npx --yes @n8n/scan-community-package "n8n-nodes-stocklake${VERSION:+@$VERSION}"
+        env:
+          VERSION: ${{ inputs.version }}
