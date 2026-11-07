@@ -4,7 +4,7 @@ All notable changes to `n8n-nodes-stocklake`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [semantic versioning](https://semver.org/).
 
-## [2.0.0] - 2026-11-06
+## [2.0.0] - 2026-11-07
 
 The node is rebuilt to behave like a native n8n node. Workflows saved with 0.1.x keep
 running unchanged: they stay on **node version 1**, which has the same parameters and
