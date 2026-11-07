@@ -78,7 +78,8 @@ const properties: INodeProperties[] = [
 			{
 				name: 'Insider Purchase',
 				value: 'insider',
-				description: 'An insider buys shares above an amount (free)',
+				description:
+					'An insider buys shares above an amount (free; a free key reads the 5 newest filings per stock, Pro up to 50)',
 			},
 			{
 				name: 'New SEC Filing',

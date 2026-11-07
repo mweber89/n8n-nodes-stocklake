@@ -1,0 +1,62 @@
+{
+ "name": "9 earnings free testevent",
+ "nodes": [
+  {
+   "id": "b2000000-0000-4000-8000-000000000001",
+   "name": "Stocklake Trigger",
+   "type": "CUSTOM.stocklakeTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "event": "earnings",
+    "symbolSource": "manual",
+    "symbols": "OXY, CEG, KKR",
+    "daysAhead": 7,
+    "minutesBetweenChecks": 1,
+    "pollTimes": {
+     "item": [
+      {
+       "mode": "everyMinute"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "stocklakeApi": {
+     "id": "<your credential>",
+     "name": "Stocklake Free"
+    }
+   }
+  },
+  {
+   "id": "b2000000-0000-4000-8000-000000000002",
+   "name": "Out",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    220,
+    0
+   ],
+   "parameters": {}
+  }
+ ],
+ "connections": {
+  "Stocklake Trigger": {
+   "main": [
+    [
+     {
+      "node": "Out",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1"
+ }
+}

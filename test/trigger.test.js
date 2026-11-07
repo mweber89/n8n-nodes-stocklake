@@ -618,7 +618,7 @@ test('filings: the first filing of a stock that had none is announced', async ()
 	assert.equal((await check(opts, HOUR)).length, 1);
 });
 
-// ====================================== the node: insider purchases (Pro)
+// ====================================== the node: insider purchases (free plan)
 
 const trade = (name, type, shares, price, date = '2026-11-03T00:00:00+00:00') => ({
 	date,
@@ -1098,6 +1098,21 @@ test('only the signal event needs Pro; insider activity is free', () => {
 			.map(([k]) => k),
 		['signal'],
 	);
+});
+
+test('node and README agree: insider purchases are free, and a free key reads fewer filings', () => {
+	const fs = require('node:fs');
+	const path = require('node:path');
+	const event = node.description.properties.find((p) => p.name === 'event');
+	const insider = event.options.find((o) => o.value === 'insider');
+	assert.match(insider.description, /\bfree\b/);
+	assert.doesNotMatch(insider.description, /requires pro/i);
+	assert.match(insider.description, /5 newest filings per stock, Pro up to 50/);
+
+	const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8');
+	assert.match(readme, /\| \*\*Insider Purchase\*\* [^\n]*\| Free \|/);
+	assert.match(readme, /Only \*\*New Signal\*\* needs Pro/);
+	assert.match(readme, /5 newest insider filings of the last 90 days per stock/);
 });
 
 // ====================================== the estimate field

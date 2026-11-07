@@ -1,0 +1,79 @@
+{
+ "name": "5 Compare 60 tickers",
+ "nodes": [
+  {
+   "id": "a1000000-0000-4000-8000-000000000001",
+   "name": "Manual Trigger",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {}
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000000002",
+   "name": "60 tickers",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ],
+   "parameters": {
+    "jsCode": "const tickers = [\"AAPL\", \"MSFT\", \"NVDA\", \"AMZN\", \"GOOGL\", \"META\", \"TSLA\", \"AVGO\", \"JPM\", \"aapl\", \"V\", \"MA\", \"UNH\", \"XOM\", \"BAD TICKER!\", \"LLY\", \"COST\", \"HD\", \"PG\", \"JNJ\", \"ABBV\", \"MRK\", \"KO\", \"PEP\", \"BAC\", \" MSFT \", \"WMT\", \"CVX\", \"CRM\", \"ORCL\", \"NFLX\", \"AMD\", \"ADBE\", \"TMO\", \"MCD\", \"CSCO\", \"ACN\", \"ABT\", \"LIN\", \"DHR\", \"Nvda\", \"TXN\", \"WFC\", \"PM\", \"QCOM\", \"INTU\", \"IBM\", \"GE\", \"CAT\", \"12$%\", \"AMGN\", \"NOW\", \"ISRG\", \"GS\", \"DIS\", \"UBER\", \"BKNG\", \"SPGI\", \"PFE\", \"T\"];\nreturn tickers.map((ticker) => ({ json: { ticker } }));"
+   }
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000000003",
+   "name": "Stocklake Stock: Compare",
+   "type": "CUSTOM.stocklake",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ],
+   "parameters": {
+    "resource": "stock",
+    "operation": "compare",
+    "symbolSource": "fromInput",
+    "symbolsFromInput": "={{ $json.ticker }}",
+    "rankBy": "none"
+   },
+   "credentials": {
+    "stocklakeApi": {
+     "id": "<your credential>",
+     "name": "Stocklake Pro"
+    }
+   }
+  }
+ ],
+ "connections": {
+  "Manual Trigger": {
+   "main": [
+    [
+     {
+      "node": "60 tickers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "60 tickers": {
+   "main": [
+    [
+     {
+      "node": "Stocklake Stock: Compare",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1"
+ }
+}

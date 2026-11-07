@@ -62,7 +62,7 @@ is the evidence behind it.
 
 | n8n feature | What 2.0.0 does | Where |
 |---|---|---|
-| Trigger | Stocklake Trigger: a polling node, six events (new signal, earnings coming up, new SEC filing, insider purchase, RSI crossing, price move). Dedup in `getWorkflowStaticData`, a first check that only records, `Fetch Test Event` in manual mode, a minimum interval and a call estimate with a warning under 15 minutes | `nodes/StocklakeTrigger/` |
+| Trigger | Stocklake Trigger: a polling node, six events (new signal, earnings coming up, new SEC filing, insider purchase, RSI crossing, price move; only the signal event needs Pro). Dedup in `getWorkflowStaticData`, a first check that only records, `Fetch Test Event` in manual mode, a minimum interval and a call estimate with a warning under 15 minutes | `nodes/StocklakeTrigger/` |
 | Items | One output item per row for 15 list operations; Simplify; Return All / Limit with paging; `_meta`; every item paired with its input item (`pairedItem`) | `nodes/Stocklake/rows.ts`, `executeRows.ts` |
 | Dynamic options | Sector, preset, signal source and direction, activity types and the symbol picker (with the watchlist) are `loadOptions` / `listSearch` methods, cached per credential, never costing a call and never calling a Pro tool for a free credential | `nodes/Stocklake/loadOptions.ts` |
 | Inputs from earlier steps | Symbol Source: manual, from input items, from the watchlist; trimmed, upper-cased, de-duplicated; batches of 25 in input order; a bad ticker is its own item | `nodes/Stocklake/symbols.ts` |
@@ -89,20 +89,34 @@ is the evidence behind it.
 
 ## What was checked
 
-- **On a running n8n** (2.46.6, the built package loaded as a custom extension, a Pro key):
-  every Stocklake Trigger event (test event, a first activation that fires nothing and
-  records state, *Fire on Existing Items*, a forgotten id that fires exactly one event, an
-  induced RSI crossing, no repeats over minutes of scheduled checks), a free key on the
-  free events and on a Pro event (a clear message), the Toolkit driven by an AI agent, and
-  all five templates run end to end (the notification nodes replaced by a Set node, the
-  agent template with a chat model in front of the real toolkit).
-- **Against the real API**: `scripts/check-api.js` calls every version 2 operation as a
-  guest, with a free key and with a Pro key and compares the result with what the node
-  expects (a guest after the limit, a Pro operation without Pro and a rejected key each
-  have their own message).
-- **By tests** (`npm test`, no network): every operation against a fake MCP endpoint (the
-  exact tool, arguments and output), golden tests for version 1, the trigger's dedup,
-  first run, threshold crossing and state cap, the templates and the copy.
+Only what was seen is listed. Workflows, execution ids and the calls used are in
+[`live-checks-2026-11-07.md`](live-checks-2026-11-07.md).
+
+- **On a running n8n** (2.46.6, the 2.0.0 build loaded as a custom extension, 2026-11-07,
+  a Pro and a Free test key):
+  - *Symbols from earlier steps*: Get Many with 60 input items on a Pro key went out as
+    three requests of 25, 25 and 5, the rows kept the input order, three repeats were
+    removed, the two invalid tickers came back as their own items, the cost notice was
+    shown, and the 55 calls the node estimated were the 55 the service counted. Compare
+    refuses more than 25 tickers with a clear error and works with 28 items.
+  - *Stocklake Trigger*, all six events on a Pro key: the test event, a first activation
+    that starts nothing and records the state, *Fire on Existing Items*, no repeat over
+    several checks a minute apart, and one forced event that starts exactly once (a removed
+    id; for RSI a changed stored value, because moving the level does not create a
+    crossing).
+  - *A free key*: the six test events (New Signal gives the Pro message; at activation n8n
+    shows it and tries five times), Insider Purchase through the whole sequence (it needs
+    no Pro; a free key reads the 5 newest filings per stock where Pro reads 50), and a
+    rejected key after activation, which shows in the executions.
+- **By tests** (`npm test`, no network, 483 tests on 2026-11-07): every operation against
+  a fake MCP endpoint (the exact tool, arguments and output), golden tests for version 1,
+  the trigger's dedup, first run, threshold crossing and state cap, the templates and the
+  copy.
+- **Not checked again on 2026-11-07, so not claimed here**: the Toolkit driven by an AI
+  agent, the five templates run end to end, `scripts/check-api.js` across guest, free and
+  Pro, the OAuth2 credential, *From My Watchlist*, and an n8n restart between two checks.
+  The dropdown loaders against the real API are recorded in
+  [`release-2.0.0.md`](release-2.0.0.md).
 
 ## What changed since the review of 0.1.1
 
