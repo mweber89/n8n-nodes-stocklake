@@ -179,7 +179,7 @@ Get Many and the Earnings Calendar have a **Symbol Source**:
 - **From My Watchlist** (Pro): the symbols starred in your Stocklake account.
 - **All Companies** (Earnings Calendar's default): no symbol filter.
 
-Whatever the source, the list is cleaned before anything is sent: trimmed, upper-cased and de-duplicated, with the first occurrence keeping its place. A value that cannot be a ticker does not fail the run. It comes out as its own item (`valid: false` with an `error`), paired with the input item it came from, and the other tickers still run. Lists of more than 25 tickers are sent in batches of 25 and the rows come back in the order of the list (the Earnings Calendar keeps its date order).
+Whatever the source, the list is cleaned before anything is sent: trimmed, upper-cased and de-duplicated, with the first occurrence keeping its place. A value that cannot be a ticker does not fail the run. It comes out as its own item (`valid: false` with an `error`), paired with the input item it came from, and the other tickers still run. A ticker Stocklake does not know comes out the same way in Get Many (`found: false` with an `error`; it still counts as a call and is also listed in `_meta.missing`). Lists of more than 25 tickers are sent in batches of 25 and the rows come back in the order of the list (the Earnings Calendar keeps its date order).
 
 Each ticker counts as one call toward your daily limit. When a run needs more than 25 calls, the node says so in the output panel before it starts, for example "About 60 calls against your daily allowance". With **Include Response Metadata** on, `_meta` also carries `estimated_calls`, `requests`, `invalid_symbols` and `duplicates_removed`.
 

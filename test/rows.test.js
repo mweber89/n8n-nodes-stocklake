@@ -475,7 +475,8 @@ test('Get Many with more than 25 symbols is sent in batches of 25', async () => 
 		fake.calls.map((c) => c.arguments.symbols.length),
 		[25, 25, 10],
 	);
-	assert.equal(output[0].length, 59);
+	assert.equal(output[0].length, 60, '59 rows plus one item for the unknown S59');
+	assert.deepEqual(output[0][59].json.found, false);
 	const { count, requested, missing, duplicates_collapsed, estimated_calls, requests } =
 		output[0][0].json._meta;
 	assert.deepEqual(

@@ -86,9 +86,7 @@ The documentation page is in the Stocklake site repository (`mcpserver/external/
 - n8n's decision on the resubmission. If they write back, answer with the text in
   `docs/resubmission.md`.
 - A demo video of 2.0 (the existing one, recorded 2026-09-02, shows 0.1.1).
-- Get Many drops a ticker of valid shape that Stocklake does not know: it is billed and
-  shows only in `_meta.missing`, while Compare returns it as an item. Decide whether
-  2.0.1 returns it as an item too (a test pins today's behaviour).
-- Unreleased on main since 2.0.0: the Insider Purchase option text and README corrections
-  (see CHANGELOG, Unreleased). They reach npm with the next version.
+- Unreleased on main since 2.0.0 (see CHANGELOG, Unreleased): Get Many returns an
+  unknown ticker as its own item (decided 2026-11-07), the Insider Purchase option text and
+  README corrections. They reach npm with the next version, after n8n's decision.
 - Revoke the npm tokens used on 2026-11-07.

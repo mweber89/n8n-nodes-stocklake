@@ -181,14 +181,42 @@ test('when every ticker is invalid no call is made and each item is still report
 	assert.ok(output[0].every((i) => i.json.valid === false));
 });
 
-test('symbols the API does not know are left out and listed as missing in the metadata', async () => {
+test('a symbol the API does not know comes back as its own item and is listed in the metadata', async () => {
 	const fake = createFakeMcp({ get_stocks: stocksTool(['NOPE']) });
 	const output = await run({
 		params: fromItems(['AAPL', 'NOPE'], { options: { includeMetadata: true } }),
 		fake,
 	});
-	assert.deepEqual(symbolsOf(output), ['AAPL']);
+	assert.deepEqual(symbolsOf(output), ['AAPL', 'NOPE']);
 	assert.deepEqual(output[0][0].json._meta.missing, ['NOPE']);
+	const nope = output[0][1];
+	assert.equal(nope.json.found, false);
+	assert.match(nope.json.error, /no data for this symbol/);
+	assert.deepEqual(nope.pairedItem, { item: 1 }, 'paired with the input item it came from');
+});
+
+test('unknown symbols come before invalid ones and both after the rows, across batches', async () => {
+	const tickers = Array.from({ length: 30 }, (_, k) => `T${k}`);
+	const fake = createFakeMcp({ get_stocks: stocksTool(['T3', 'T27']) });
+	const output = await run({ params: fromItems([...tickers, '??']), fake });
+	const items = output[0];
+	assert.equal(items.length, 31);
+	assert.deepEqual(items.slice(28).map((i) => i.json.symbol), ['T3', 'T27', '??']);
+	assert.deepEqual(items.slice(28, 30).map((i) => i.json.found), [false, false]);
+	assert.equal(items[30].json.valid, false);
+	assert.deepEqual(items[29].pairedItem, { item: 27 });
+});
+
+test('with Download as CSV an unknown symbol stays an item next to the file', async () => {
+	const fake = createFakeMcp({ get_stocks: stocksTool(['NOPE']) });
+	const output = await run({
+		params: fromItems(['AAPL', 'NOPE'], { options: { downloadCsv: true } }),
+		fake,
+	});
+	assert.equal(output[0].length, 2);
+	assert.ok(output[0][0].binary, 'the first item is the file');
+	assert.equal(output[0][1].json.symbol, 'NOPE');
+	assert.equal(output[0][1].json.found, false);
 });
 
 // ------------------------------------------------------------ cost notice

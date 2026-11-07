@@ -8,6 +8,10 @@ All notable changes to `n8n-nodes-stocklake`. The format follows
 
 ### Changed
 
+- Get Many: a ticker Stocklake does not know comes back as its own item
+  (`found: false` with an `error`, paired with its input item), as in Compare. Before, it
+  appeared only in `_meta.missing`, so a row could disappear unnoticed. It is still listed
+  there and still counts as a call.
 - Stocklake Trigger: the Insider Purchase option says it works on a free key (Free reads
   the 5 newest filings per stock, Pro 50).
 - README: Insider Purchase is a free event; a free key on a Pro event fails when the

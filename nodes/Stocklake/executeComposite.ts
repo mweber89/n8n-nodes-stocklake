@@ -30,6 +30,7 @@ import {
 	manualPlan,
 	planFor,
 	withAllowance,
+	NOT_FOUND,
 } from './executeRows';
 import type { SymbolPlan } from './executeRows';
 import { LIST_SPECS, SYMBOLS_PER_CALL, chunk } from './rows';
@@ -43,8 +44,6 @@ export const COMPOSITE_OPERATIONS = new Set([
 	'portfolio.checkHoldings',
 ]);
 
-const NOT_FOUND =
-	'Stocklake has no data for this symbol. Check the ticker; stocks that are not listed in the US carry an exchange suffix, such as SAP.DE or BP.L.';
 
 function hint(context: IExecuteFunctions, message: string) {
 	context.addExecutionHints?.({ message, location: 'outputPane' });

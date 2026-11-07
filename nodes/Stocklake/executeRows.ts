@@ -218,6 +218,25 @@ export async function planFor(
 	return { source, list: buildSymbolList(entries.map((e) => ({ value: e.symbol, item: 0 }))) };
 }
 
+/** The error on an item for a ticker the API does not know (Get Many, Compare, Snapshot,
+ * Check Holdings). */
+export const NOT_FOUND =
+	'Stocklake has no data for this symbol. Check the ticker; stocks that are not listed in the US carry an exchange suffix, such as SAP.DE or BP.L.';
+
+/** One item per ticker the API reported as unknown, paired with the input item it came
+ * from. The ticker is still listed in `_meta.missing`. */
+export function notFoundItems(
+	missing: unknown,
+	pairedItemOf: (symbol: unknown) => number | undefined,
+	fallbackItem: number,
+): INodeExecutionData[] {
+	if (!Array.isArray(missing)) return [];
+	return missing.map((symbol) => ({
+		json: { symbol: String(symbol), found: false, error: NOT_FOUND },
+		pairedItem: { item: pairedItemOf(symbol) ?? fallbackItem },
+	}));
+}
+
 export function invalidItems(plan: SymbolPlan): INodeExecutionData[] {
 	return plan.list.invalid.map((entry) => ({
 		json: { symbol: entry.input, valid: false, error: entry.reason },
@@ -310,6 +329,11 @@ async function itemOutput(
 		: await fetchRows.call(this, spec, toolName, callArguments, wanted, i);
 
 	const meta = includeMetadata ? { _meta: { ...fetched.metadata, ...symbolMeta } } : {};
+	// Tickers of a valid shape that Stocklake does not know: each its own item, as in Compare.
+	invalidOutput = [
+		...(symbolOperation ? notFoundItems(fetched.metadata.missing, pairedItemOf, i) : []),
+		...invalidOutput,
+	];
 
 	// Download as CSV: the rows become one file. Rows that could not be read stay items.
 	if (options.downloadCsv === true && fetched.rows.length + fetched.extras.length > 0) {
